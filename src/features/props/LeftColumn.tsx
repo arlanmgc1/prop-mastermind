@@ -13,6 +13,7 @@ import { parseSofascoreExport } from "@/services/sofascoreImportParser";
 import { getOddsImageExtractor } from "@/services/oddsImageExtractor";
 import { parseNumberOrNull } from "@/domain/validation/validators";
 import { buildConsensus } from "@/domain/odds/consensus";
+import { parseLadderPaste } from "@/domain/market/parseLadderPaste";
 import type { CalcState, ReviewedOdd } from "./state";
 import { emptyLadderRow } from "./state";
 import { autoMinutes } from "./compute";
@@ -45,24 +46,12 @@ function LadderTable({
     onChange(rows.map((r) => (r.id === id ? { ...r, ...patch } : r)));
 
   const applyPaste = () => {
-    const parsed: LadderRow[] = [];
-    for (const line of paste.split(/\r?\n/)) {
-      const cells = line
-        .split(/[\t;,|]|\s{2,}/)
-        .map((c) => c.trim())
-        .filter(Boolean);
-      if (cells.length < 2) continue;
-      const l = parseNumberOrNull(cells[0]);
-      if (l == null) continue;
-      parsed.push({
-        id: crypto.randomUUID(),
-        line: l,
-        oddOver: parseNumberOrNull(cells[1]),
-        oddUnder: parseNumberOrNull(cells[2] ?? null),
-      });
-    }
+    const parsed: LadderRow[] = parseLadderPaste(paste).map((row) => ({
+      id: crypto.randomUUID(),
+      ...row,
+    }));
     if (parsed.length === 0) {
-      toast.error("Nenhuma linha reconhecida. Use: linha, odd Over, odd Under.");
+      toast.error("Nenhuma linha reconhecida. Cole a frase da casa ou use: linha, odd Over, odd Under.");
       return;
     }
     onChange([...rows, ...parsed]);
@@ -162,7 +151,7 @@ function LadderTable({
           <Input
             value={paste}
             onChange={(e) => setPaste(e.target.value)}
-            placeholder="Colar tabela: 10,5  1,70  2,15"
+            placeholder="Ex.: AC Milan Total de Faltas Mais de 11.5 2.05 Menos de 11.5 1.72"
             className="h-8 text-xs"
           />
           <Button size="sm" variant="secondary" onClick={applyPaste}>
