@@ -8,7 +8,12 @@ import {
 } from "../comparison/blendProbabilities";
 import { expectedValue, fairOdd, decide } from "../risk/expectedValue";
 import { fractionalKelly, fullKelly } from "../risk/kelly";
-import { computePlayerRate, projectPlayerMean, rate90, shareFromRates } from "../player/projectPlayerMean";
+import {
+  computePlayerRate,
+  projectPlayerMean,
+  rate90,
+  shareFromRates,
+} from "../player/projectPlayerMean";
 import { buildPropLadder } from "../player/buildPropLadder";
 
 describe("blend", () => {
@@ -88,6 +93,13 @@ describe("projeção do jogador", () => {
       roleMultiplier: 1,
     });
     expect(r.muPlayer!).toBeCloseTo(12 * 0.2 * (72 / 90) * 1.05, 10);
+  });
+  it("o mercado atual altera mu quando o share usa baseline histórico", () => {
+    const share = shareFromRates(3, 10);
+    const low = projectPlayerMean({ lambdaTeam: 10, playerShare: share, expectedMinutes: 90 });
+    const high = projectPlayerMean({ lambdaTeam: 15, playerShare: share, expectedMinutes: 90 });
+    expect(low.muPlayer).toBeCloseTo(3, 10);
+    expect(high.muPlayer).toBeCloseTo(4.5, 10);
   });
   it("entrada ausente não é substituída por zero", () => {
     const r = projectPlayerMean({ lambdaTeam: null, playerShare: 0.2, expectedMinutes: 70 });

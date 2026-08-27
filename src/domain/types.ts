@@ -1,9 +1,5 @@
 export type MarketType =
-  | "shots"
-  | "shots_on_target"
-  | "fouls_committed"
-  | "fouls_suffered"
-  | "tackles";
+  "shots" | "shots_on_target" | "fouls_committed" | "fouls_suffered" | "tackles";
 
 export const MARKET_LABELS: Record<MarketType, string> = {
   shots: "Chutes",
@@ -13,14 +9,7 @@ export const MARKET_LABELS: Record<MarketType, string> = {
   tackles: "Desarmes",
 };
 
-export type PlayerRole =
-  | "ST"
-  | "SA"
-  | "Ponta"
-  | "Meia"
-  | "Volante"
-  | "Lateral"
-  | "Zagueiro";
+export type PlayerRole = "ST" | "SA" | "Ponta" | "Meia" | "Volante" | "Lateral" | "Zagueiro";
 
 export type StarterStatus = "titular" | "reserva" | "incerto";
 

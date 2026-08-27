@@ -50,19 +50,41 @@ export function enforceMonotonic(points: FairLadderPoint[]): {
   points: FairLadderPoint[];
   fixed: boolean;
 } {
-  const out = points.map((p) => ({ ...p }));
-  let fixed = false;
-  for (let i = 1; i < out.length; i++) {
-    const cur = out[i]!;
-    const prev = out[i - 1]!;
-    if (cur.pOver > prev.pOver) {
-      fixed = true;
-      const avg = (cur.pOver + prev.pOver) / 2;
-      prev.pOver = Math.min(0.999, avg + 1e-6);
-      cur.pOver = Math.max(0.001, avg - 1e-6);
+  if (points.length < 2) return { points: points.map((p) => ({ ...p })), fixed: false };
+
+  // Pool Adjacent Violators: corrigir um par pode inverter o par anterior.
+  const blocks = points.map((point, index) => ({
+    start: index,
+    end: index,
+    value: point.pOver,
+    weight: 1,
+  }));
+  for (let i = 0; i < blocks.length - 1;) {
+    const left = blocks[i]!;
+    const right = blocks[i + 1]!;
+    if (left.value >= right.value) {
+      i++;
+      continue;
     }
+    const weight = left.weight + right.weight;
+    blocks.splice(i, 2, {
+      start: left.start,
+      end: right.end,
+      value: (left.value * left.weight + right.value * right.weight) / weight,
+      weight,
+    });
+    if (i > 0) i--;
   }
-  return { points: out, fixed };
+
+  const fitted = new Array<number>(points.length);
+  for (const block of blocks) {
+    for (let i = block.start; i <= block.end; i++) fitted[i] = block.value;
+  }
+  const fixed = fitted.some((value, index) => Math.abs(value - points[index]!.pOver) > 1e-12);
+  return {
+    points: points.map((point, index) => ({ ...point, pOver: fitted[index]! })),
+    fixed,
+  };
 }
 
 function sse(points: FairLadderPoint[], mu: number, k: number | null, kind: DistributionKind) {

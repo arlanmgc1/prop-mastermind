@@ -20,7 +20,10 @@ function EmptyState({ state }: { state: CalcState }) {
     ["Jogador identificado", state.playerName !== ""],
     ["Tipo de prop e linha", state.playerLine != null],
     ["Odd Over oferecida", state.offeredOdd != null],
-    ["Mercado da equipe com Over e Under", state.teamLadder.some((r) => r.oddOver != null && r.oddUnder != null)],
+    [
+      "Mercado da equipe com Over e Under",
+      state.teamLadder.some((r) => r.oddOver != null && r.oddUnder != null),
+    ],
     ["Minutos esperados", state.expectedMinutes != null],
     ["Amostra importada", (state.parsed?.performances.length ?? 0) > 0],
   ] as const;
@@ -69,11 +72,16 @@ export function RightColumn({
       >
         <div className="grid grid-cols-[minmax(0,1fr)_auto] items-end gap-3">
           <div className="min-w-0">
-            <p className="text-[11px] uppercase tracking-wide text-muted-foreground">Fair principal</p>
-            <p className="num text-5xl font-bold leading-none text-primary">{fmtOdd(result.fair)}</p>
+            <p className="text-[11px] uppercase tracking-wide text-muted-foreground">
+              Fair principal
+            </p>
+            <p className="num text-5xl font-bold leading-none text-primary">
+              {fmtOdd(result.fair)}
+            </p>
             <p className="mt-1 text-xs text-muted-foreground">
-              Over {param(state.playerLine, 1)} · {state.participation === "substituto_conta" ? "Substituto conta" : "Somente titular"} ·{" "}
-              {param(result.expectedMinutes, 0)} min
+              Over {param(state.playerLine, 1)} ·{" "}
+              {state.participation === "substituto_conta" ? "Substituto conta" : "Somente titular"}{" "}
+              · {param(result.expectedMinutes, 0)} min
             </p>
           </div>
           <div className="space-y-1 text-right">
@@ -82,7 +90,11 @@ export function RightColumn({
             <p className="text-[11px] text-muted-foreground">Odd oferecida</p>
             <p className="num text-sm">{fmtOdd(state.offeredOdd)}</p>
             <p className="text-[11px] text-muted-foreground">EV por unidade</p>
-            <p className={`num text-sm ${(result.ev ?? 0) > 0 ? "text-success" : "text-muted-foreground"}`}>{signed(result.ev)}</p>
+            <p
+              className={`num text-sm ${(result.ev ?? 0) > 0 ? "text-success" : "text-muted-foreground"}`}
+            >
+              {signed(result.ev)}
+            </p>
           </div>
         </div>
       </Panel>
@@ -90,8 +102,18 @@ export function RightColumn({
       <Panel title="Comparação tripla">
         <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
           {[
-            { t: "Modelo puro", p: result.pModel, o: result.pModel ? 1 / result.pModel : null, sub: "Fair" },
-            { t: "Comparativo bruto", p: result.pComparable, o: c?.consensusOdd ?? null, sub: "Consenso" },
+            {
+              t: "Modelo puro",
+              p: result.pModel,
+              o: result.pModel ? 1 / result.pModel : null,
+              sub: "Fair",
+            },
+            {
+              t: "Comparativo bruto",
+              p: result.pComparable,
+              o: c?.consensusOdd ?? null,
+              sub: "Consenso",
+            },
             { t: "Resultado combinado", p: result.pFinal, o: result.fair, sub: "Fair" },
           ].map((b) => (
             <div key={b.t} className="rounded-lg border border-border bg-secondary p-2.5">
@@ -104,8 +126,12 @@ export function RightColumn({
           ))}
         </div>
         <p className="mt-2 text-[11px] text-warning">
-          O comparativo é unilateral (apenas Over) e contém margem desconhecida — rotulado como consenso bruto
-          {result.comparableMethod === "desconto_heuristico" ? " com desconto heurístico (hipótese)" : " sem desconto"}.
+          O comparativo é unilateral (apenas Over) e contém margem desconhecida — rotulado como
+          consenso bruto
+          {result.comparableMethod === "desconto_heuristico"
+            ? " com desconto heurístico (hipótese)"
+            : " sem desconto"}
+          .
         </p>
         {c ? (
           <div className="mt-2 grid grid-cols-2 gap-x-4 sm:grid-cols-3">
@@ -117,7 +143,9 @@ export function RightColumn({
             <Stat label="Prob. implícita média" value={pct(c.impliedMean)} />
           </div>
         ) : (
-          <p className="mt-2 text-xs text-muted-foreground">Sem comparativo confirmado — resultado igual ao modelo puro.</p>
+          <p className="mt-2 text-xs text-muted-foreground">
+            Sem comparativo confirmado — resultado igual ao modelo puro.
+          </p>
         )}
         {c && c.removed.length > 0 ? (
           <div className="mt-2 space-y-0.5">
@@ -145,14 +173,21 @@ export function RightColumn({
             </thead>
             <tbody>
               {result.ladder.map((r) => {
-                const selected = state.playerLine != null && Math.abs(r.line - state.playerLine) < 1e-9;
+                const selected =
+                  state.playerLine != null && Math.abs(r.line - state.playerLine) < 1e-9;
                 return (
-                  <tr key={r.line} className={`border-t border-border ${selected ? "bg-primary/10" : ""}`}>
+                  <tr
+                    key={r.line}
+                    className={`border-t border-border ${selected ? "bg-primary/10" : ""}`}
+                  >
                     <td className="num px-2 py-1.5">
-                      Over {param(r.line, 1)} <span className="text-muted-foreground">({r.label})</span>
+                      Over {param(r.line, 1)}{" "}
+                      <span className="text-muted-foreground">({r.label})</span>
                     </td>
                     <td className="num px-2 py-1.5 text-right">{pct(r.pFinal)}</td>
-                    <td className={`num px-2 py-1.5 text-right ${selected ? "text-primary" : ""}`}>{fmtOdd(r.fair)}</td>
+                    <td className={`num px-2 py-1.5 text-right ${selected ? "text-primary" : ""}`}>
+                      {fmtOdd(r.fair)}
+                    </td>
                     <td className="num px-2 py-1.5 text-right">{fmtOdd(r.marketOdd)}</td>
                     <td className="num px-2 py-1.5 text-right">{signed(r.ev)}</td>
                     <td className="px-2 py-1.5">
@@ -168,26 +203,92 @@ export function RightColumn({
 
       <Panel title="Detalhes do Cálculo">
         <div className="grid grid-cols-1 gap-x-6 sm:grid-cols-2">
-          <Stat label="lambda_team" value={param(result.lambdaTeam)} tip="Média esperada da estatística para a equipe na partida, ajustada às linhas de mercado." />
-          <Stat label="Taxa do jogador por 90" value={param(result.playerRate90)} tip="90 × contagem total ÷ minutos totais da amostra." />
-          <Stat label="Taxa recente ponderada" value={param(result.recentRate90)} tip="Taxa por 90 dos jogos recentes, com peso de 35%." />
-          <Stat label="Taxa com shrinkage" value={param(result.shrunkRate90)} tip="Taxa puxada para o prior quando a amostra é pequena. Sem prior informado, é igual à ponderada." />
-          <Stat label="Share do jogador" value={pct(result.playerShare)} tip="Fatia da produção da equipe atribuída ao jogador." />
-          <Stat label="Minutos esperados" value={param(result.expectedMinutes, 0)} tip="Minutos previstos em campo nesta partida." />
-          <Stat label="mu_player" value={param(result.muPlayer)} accent tip="Média esperada da estatística do jogador nesta partida." />
-          <Stat label="Dispersão k" value={param(result.dispersionK)} tip="Var(X) = mu + mu²/k. Sem k, usa-se Poisson." />
-          <Stat label="Distribuição" value={result.distribution === "negbin" ? "Binomial negativa" : "Poisson"} tip="Distribuição usada para converter mu em probabilidades." />
-          <Stat label="Prob. modelo puro" value={pct(result.pModel)} tip="Probabilidade do Over pela distribuição, sem comparativo." />
-          <Stat label="Prob. comparativo" value={pct(result.pComparable)} tip="Consenso bruto das odds de outras fontes — contém margem." />
-          <Stat label="Peso aplicado" value={pct(result.blend?.weight ?? 0)} tip="Peso do comparativo no blend logit, limitado a 30%." />
-          <Stat label="Probabilidade final" value={pct(result.pFinal)} accent tip="Blend no espaço logit entre modelo e comparativo." />
+          <Stat
+            label="lambda_team"
+            value={param(result.lambdaTeam)}
+            tip="Média esperada da estatística para a equipe na partida, ajustada às linhas de mercado."
+          />
+          <Stat
+            label="Taxa do jogador por 90"
+            value={param(result.playerRate90)}
+            tip="90 × contagem total ÷ minutos totais da amostra."
+          />
+          <Stat
+            label="Taxa recente ponderada"
+            value={param(result.recentRate90)}
+            tip="Taxa por 90 dos jogos recentes, com peso de 35%."
+          />
+          <Stat
+            label="Taxa com shrinkage"
+            value={param(result.shrunkRate90)}
+            tip="Taxa puxada para o prior quando a amostra é pequena. Sem prior informado, é igual à ponderada."
+          />
+          <Stat
+            label="Share do jogador"
+            value={pct(result.playerShare)}
+            tip="Fatia da produção da equipe atribuída ao jogador."
+          />
+          <Stat
+            label="Minutos esperados"
+            value={param(result.expectedMinutes, 0)}
+            tip="Minutos previstos em campo nesta partida."
+          />
+          <Stat
+            label="mu_player"
+            value={param(result.muPlayer)}
+            accent
+            tip="Média esperada da estatística do jogador nesta partida."
+          />
+          <Stat
+            label="Dispersão k"
+            value={param(result.dispersionK)}
+            tip="Var(X) = mu + mu²/k. Sem k, usa-se Poisson."
+          />
+          <Stat
+            label="Distribuição"
+            value={result.distribution === "negbin" ? "Binomial negativa" : "Poisson"}
+            tip="Distribuição usada para converter mu em probabilidades."
+          />
+          <Stat
+            label="Prob. modelo puro"
+            value={pct(result.pModel)}
+            tip="Probabilidade do Over pela distribuição, sem comparativo."
+          />
+          <Stat
+            label="Prob. comparativo"
+            value={pct(result.pComparable)}
+            tip="Consenso bruto das odds de outras fontes — contém margem."
+          />
+          <Stat
+            label="Peso aplicado"
+            value={pct(result.blend?.weight ?? 0)}
+            tip="Peso do comparativo no blend logit, limitado a 30%."
+          />
+          <Stat
+            label="Probabilidade final"
+            value={pct(result.pFinal)}
+            accent
+            tip="Blend no espaço logit entre modelo e comparativo."
+          />
           <Stat
             label="Faixa de incerteza"
-            value={result.uncertainty ? `${pct(result.uncertainty[0])} – ${pct(result.uncertainty[1])}` : "—"}
+            value={
+              result.uncertainty
+                ? `${pct(result.uncertainty[0])} – ${pct(result.uncertainty[1])}`
+                : "—"
+            }
             tip="Sensibilidade da probabilidade a uma variação de ±15% em mu_player."
           />
-          <Stat label="Cobertura dos dados" value={pct(result.coverage)} tip="Proporção das atuações com a estatística disponível." />
-          <Stat label="Amostra (contagem/minutos)" value={`${result.sampleCount ?? "—"} / ${result.sampleMinutes ?? "—"}`} tip="Base usada para a taxa por 90." />
+          <Stat
+            label="Cobertura dos dados"
+            value={pct(result.coverage)}
+            tip="Proporção das atuações com a estatística disponível."
+          />
+          <Stat
+            label="Amostra (contagem/minutos)"
+            value={`${result.sampleCount ?? "—"} / ${result.sampleMinutes ?? "—"}`}
+            tip="Base usada para a taxa por 90."
+          />
         </div>
       </Panel>
 
@@ -200,24 +301,43 @@ export function RightColumn({
           ))}
         </div>
         <div className="mt-2 grid grid-cols-2 gap-x-6">
-          <Stat label="Kelly completo" value={result.kelly.full == null ? "—" : pct(result.kelly.full)} />
+          <Stat
+            label="Kelly completo"
+            value={result.kelly.full == null ? "—" : pct(result.kelly.full)}
+          />
           <Stat
             label="Stake sugerida"
-            value={(result.ev ?? -1) > 0 && result.kelly.fraction != null ? pct(result.kelly.fraction) : "—"}
+            value={
+              (result.ev ?? -1) > 0 && result.kelly.fraction != null
+                ? pct(result.kelly.fraction)
+                : "—"
+            }
             tip="Calculada apenas com EV positivo e divisor Kelly selecionado."
           />
         </div>
         <div className="mt-2 space-y-1">
-          {result.coverage < 0.6 ? <p className="text-[11px] text-warning">Cobertura de dados baixa.</p> : null}
-          {state.starter === "incerto" ? <p className="text-[11px] text-warning">Minutos incertos.</p> : null}
-          {c && c.count === 1 ? <p className="text-[11px] text-warning">Comparativo com uma única fonte.</p> : null}
-          <p className="text-[11px] text-muted-foreground">Gerador de múltiplas não faz parte desta versão.</p>
+          {result.coverage < 0.6 ? (
+            <p className="text-[11px] text-warning">Cobertura de dados baixa.</p>
+          ) : null}
+          {state.starter === "incerto" ? (
+            <p className="text-[11px] text-warning">Minutos incertos.</p>
+          ) : null}
+          {c && c.count === 1 ? (
+            <p className="text-[11px] text-warning">Comparativo com uma única fonte.</p>
+          ) : null}
+          <p className="text-[11px] text-muted-foreground">
+            Gerador de múltiplas não faz parte desta versão.
+          </p>
         </div>
       </Panel>
 
       <Panel
         title={
-          <button type="button" onClick={() => setAuditOpen((v) => !v)} className="text-sm font-semibold">
+          <button
+            type="button"
+            onClick={() => setAuditOpen((v) => !v)}
+            className="text-sm font-semibold"
+          >
             {auditOpen ? "▾" : "▸"} Auditoria
           </button>
         }
@@ -226,17 +346,24 @@ export function RightColumn({
         {auditOpen ? (
           <div className="space-y-3">
             <div>
-              <p className="mb-1 text-xs font-medium">Probabilidades sem margem — linhas de equipe</p>
+              <p className="mb-1 text-xs font-medium">
+                Probabilidades sem margem — linhas de equipe
+              </p>
               <div className="space-y-0.5">
                 {(result.teamFit?.points ?? []).map((p) => (
-                  <div key={p.line} className="num flex justify-between text-[11px] text-muted-foreground">
+                  <div
+                    key={p.line}
+                    className="num flex justify-between text-[11px] text-muted-foreground"
+                  >
                     <span>Over {param(p.line, 1)}</span>
                     <span>
                       {pct(p.pOver)} · overround {pct(p.overround)}
                     </span>
                   </div>
                 ))}
-                {(result.teamFit?.points.length ?? 0) === 0 ? <p className="text-[11px] text-muted-foreground">—</p> : null}
+                {(result.teamFit?.points.length ?? 0) === 0 ? (
+                  <p className="text-[11px] text-muted-foreground">—</p>
+                ) : null}
               </div>
             </div>
             <div>
@@ -245,7 +372,10 @@ export function RightColumn({
                 <p className="text-[11px] text-muted-foreground">Nenhuma.</p>
               ) : (
                 result.messages.map((m, i) => (
-                  <p key={i} className={`text-[11px] ${m.severity === "erro" ? "text-destructive" : m.severity === "aviso" ? "text-warning" : "text-muted-foreground"}`}>
+                  <p
+                    key={i}
+                    className={`text-[11px] ${m.severity === "erro" ? "text-destructive" : m.severity === "aviso" ? "text-warning" : "text-muted-foreground"}`}
+                  >
                     {m.message}
                   </p>
                 ))
@@ -254,7 +384,16 @@ export function RightColumn({
             <div>
               <p className="mb-1 text-xs font-medium">Inputs normalizados</p>
               <pre className="num max-h-56 overflow-auto rounded-lg border border-border bg-background p-2 text-[10px] text-muted-foreground">
-                {JSON.stringify({ ...state, parsed: state.parsed?.performances ?? null, images: state.images.length, rawImport: undefined }, null, 2)}
+                {JSON.stringify(
+                  {
+                    ...state,
+                    parsed: state.parsed?.performances ?? null,
+                    images: state.images.length,
+                    rawImport: undefined,
+                  },
+                  null,
+                  2,
+                )}
               </pre>
             </div>
             <Button size="sm" variant="secondary" onClick={onExport}>
@@ -262,7 +401,9 @@ export function RightColumn({
             </Button>
           </div>
         ) : (
-          <p className="text-xs text-muted-foreground">Inputs normalizados, probabilidades justas, parâmetros e validações.</p>
+          <p className="text-xs text-muted-foreground">
+            Inputs normalizados, probabilidades justas, parâmetros e validações.
+          </p>
         )}
       </Panel>
     </div>

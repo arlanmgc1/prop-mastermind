@@ -49,11 +49,21 @@ export function buildConsensus(
   const removed: ConsensusResult["removed"] = [];
   let pool = inputs.filter((i) => {
     if (i.decimalOdd == null || !(i.decimalOdd > 1)) {
-      removed.push({ id: i.id, source: i.source, decimalOdd: i.decimalOdd, reason: "Odd inválida ou ausente" });
+      removed.push({
+        id: i.id,
+        source: i.source,
+        decimalOdd: i.decimalOdd,
+        reason: "Odd inválida ou ausente",
+      });
       return false;
     }
     if (opts.excludeTargetOdd && i.isTargetOdd) {
-      removed.push({ id: i.id, source: i.source, decimalOdd: i.decimalOdd, reason: "Odd-alvo excluída do consenso" });
+      removed.push({
+        id: i.id,
+        source: i.source,
+        decimalOdd: i.decimalOdd,
+        reason: "Odd-alvo excluída do consenso",
+      });
       return false;
     }
     return true;

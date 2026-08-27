@@ -54,7 +54,15 @@ export function Chip({
   );
 }
 
-export function Field({ label, children, hint }: { label: string; children: ReactNode; hint?: string }) {
+export function Field({
+  label,
+  children,
+  hint,
+}: {
+  label: string;
+  children: ReactNode;
+  hint?: string;
+}) {
   return (
     <label className="flex min-w-0 flex-col gap-1">
       <span className="text-[11px] uppercase tracking-wide text-muted-foreground">{label}</span>
@@ -78,7 +86,9 @@ export function Stat({
   const row = (
     <div className="flex items-baseline justify-between gap-3 border-b border-border/60 py-1.5 last:border-b-0">
       <span className="text-xs text-muted-foreground">{label}</span>
-      <span className={cn("num text-xs", accent ? "text-primary" : "text-foreground")}>{value}</span>
+      <span className={cn("num text-xs", accent ? "text-primary" : "text-foreground")}>
+        {value}
+      </span>
     </div>
   );
   if (!tip) return row;
@@ -92,7 +102,13 @@ export function Stat({
   );
 }
 
-export function Tag({ tone = "muted", children }: { tone?: "muted" | "primary" | "success" | "warning" | "danger"; children: ReactNode }) {
+export function Tag({
+  tone = "muted",
+  children,
+}: {
+  tone?: "muted" | "primary" | "success" | "warning" | "danger";
+  children: ReactNode;
+}) {
   const tones = {
     muted: "bg-secondary text-muted-foreground",
     primary: "bg-primary text-primary-foreground",
@@ -100,5 +116,9 @@ export function Tag({ tone = "muted", children }: { tone?: "muted" | "primary" |
     warning: "bg-warning text-warning-foreground",
     danger: "bg-destructive text-destructive-foreground",
   } as const;
-  return <span className={cn("rounded-full px-2 py-0.5 text-[10px] font-semibold", tones[tone])}>{children}</span>;
+  return (
+    <span className={cn("rounded-full px-2 py-0.5 text-[10px] font-semibold", tones[tone])}>
+      {children}
+    </span>
+  );
 }

@@ -87,3 +87,27 @@ describe("parser do export SofaScore", () => {
     expect(none.minutes).toBeNull();
   });
 });
+
+const REAL_COLLECTOR_SHAPE = `JOGADOR\tAlex Luna
+SOFASCORE_ID\t1094228
+URL\thttps://www.sofascore.com/pt/football/player/alex-luna/1094228
+COLETADO_EM\t2026-08-27T22:17:07.970Z
+
+BLOCO\tÚLTIMAS 15 ATUAÇÕES
+ORDEM\tDATA\tCOMPETIÇÃO\tTIME\tCASA/FORA\tADVERSÁRIO\tPLACAR\tRESULTADO\tPARTICIPAÇÃO\tMP\tMIN\tGLS\tAST\tASR\tTOS\tSOT\tBCM\txG
+1\t2026-08-22\tLiga Profesional de Fútbol\tInstituto De Córdoba\tfora\tAtlético Tucumán\t0-0\tE\tTitular\t1\t75\t0\t0\t6.80\t4\t3\t1\t0.46
+2\t2026-08-16\tLiga Profesional de Fútbol\tInstituto De Córdoba\tfora\tCentral Córdoba\t1-0\tV\tTitular\t1\t77\t0\t0\t7.40\t2\t1\t0\t0.26`;
+
+describe("formato real do coletor", () => {
+  it("aceita metadados por tabulação e cabeçalho completo", () => {
+    const parsed = parseSofascoreExport(REAL_COLLECTOR_SHAPE);
+    expect(parsed.errors).toEqual([]);
+    expect(parsed.playerName).toBe("Alex Luna");
+    expect(parsed.sofascoreId).toBe("1094228");
+    expect(parsed.team).toBe("Instituto De Córdoba");
+    expect(parsed.performances).toHaveLength(2);
+    expect(parsed.performances[0]!.shots).toBe(4);
+    expect(parsed.performances[0]!.shotsOnTarget).toBe(3);
+    expect(parsed.performances[0]!.starter).toBe(true);
+  });
+});

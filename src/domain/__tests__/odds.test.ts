@@ -15,7 +15,7 @@ describe("removeMargin (proporcional)", () => {
   });
 
   it("Over 17,5 @1,88 / Under 17,5 @1,85", () => {
-    expect(removeMargin(1.88, 1.85).pOver!).toBeCloseTo(0.4960, 3);
+    expect(removeMargin(1.88, 1.85).pOver!).toBeCloseTo(0.496, 3);
   });
 
   it("soma das probabilidades justas é 1", () => {
@@ -69,13 +69,16 @@ describe("consenso de odds", () => {
   });
 
   it("remove outliers e informa motivo", () => {
-    const r = buildConsensus([
-      { id: "a", decimalOdd: 1.8 },
-      { id: "b", decimalOdd: 1.82 },
-      { id: "c", decimalOdd: 1.79 },
-      { id: "d", decimalOdd: 1.81 },
-      { id: "e", decimalOdd: 5.0 },
-    ], { outlierZ: 1.5 });
+    const r = buildConsensus(
+      [
+        { id: "a", decimalOdd: 1.8 },
+        { id: "b", decimalOdd: 1.82 },
+        { id: "c", decimalOdd: 1.79 },
+        { id: "d", decimalOdd: 1.81 },
+        { id: "e", decimalOdd: 5.0 },
+      ],
+      { outlierZ: 1.5 },
+    );
     expect(r.removed.some((x) => x.reason.includes("Outlier"))).toBe(true);
     expect(r.count).toBe(4);
   });

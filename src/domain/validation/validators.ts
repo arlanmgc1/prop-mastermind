@@ -28,7 +28,8 @@ export function validateLadder(rows: LadderRow[], label: string): ValidationMess
   const fair: { line: number; p: number }[] = [];
 
   for (const r of rows) {
-    if (seen.has(r.line)) msgs.push({ severity: "aviso", message: `${label}: linha ${r.line} duplicada.` });
+    if (seen.has(r.line))
+      msgs.push({ severity: "aviso", message: `${label}: linha ${r.line} duplicada.` });
     seen.add(r.line);
     if (r.oddOver == null || r.oddUnder == null) {
       msgs.push({ severity: "aviso", message: `${label}: linha ${r.line} com odds faltantes.` });

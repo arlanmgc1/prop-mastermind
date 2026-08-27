@@ -7,7 +7,13 @@ import { Button } from "@/components/ui/button";
 import { LeftColumn } from "@/features/props/LeftColumn";
 import { RightColumn } from "@/features/props/RightColumn";
 import { computeAll, type CalcResult } from "@/features/props/compute";
-import { clearDraft, initialState, loadDraft, saveDraft, type CalcState } from "@/features/props/state";
+import {
+  clearDraft,
+  initialState,
+  loadDraft,
+  saveDraft,
+  type CalcState,
+} from "@/features/props/state";
 import { validateBeforeCalc } from "@/domain/validation/validators";
 import type { KellyDivisor } from "@/domain/risk/kelly";
 
@@ -20,7 +26,10 @@ export const Route = createFileRoute("/")({
         content:
           "Precificação pré-jogo de props de futebol: remoção de margem, distribuições, escada de linhas, fair odds, EV e Kelly com auditoria completa.",
       },
-      { property: "og:title", content: "Calculadora de Props — precificação pré-jogo de jogadores" },
+      {
+        property: "og:title",
+        content: "Calculadora de Props — precificação pré-jogo de jogadores",
+      },
       {
         property: "og:description",
         content:
@@ -108,7 +117,11 @@ function Index() {
             <Button
               size="sm"
               variant="secondary"
-              onClick={() => toast[saveDraft(state) ? "success" : "error"](saveDraft(state) ? "Rascunho salvo localmente." : "Não foi possível salvar.")}
+              onClick={() =>
+                toast[saveDraft(state) ? "success" : "error"](
+                  saveDraft(state) ? "Rascunho salvo localmente." : "Não foi possível salvar.",
+                )
+              }
             >
               Salvar
             </Button>

@@ -1,6 +1,7 @@
 import { parseNumberOrNull } from "../domain/validation/validators";
 
 export interface PlayerPerformance {
+  team: string | null;
   competition: string | null;
   opponent: string | null;
   homeAway: "casa" | "fora" | null;
@@ -54,12 +55,14 @@ const HEADER_ALIASES: Record<string, keyof PlayerPerformance> = {
   SOT: "shotsOnTarget",
   "CHUTES NO GOL": "shotsOnTarget",
   XG: "xG",
+  TIME: "team",
+  EQUIPE: "team",
   COMP: "competition",
   COMPETICAO: "competition",
-  "COMPETIÇÃO": "competition",
+  COMPETIÇÃO: "competition",
   ADV: "opponent",
   ADVERSARIO: "opponent",
-  "ADVERSÁRIO": "opponent",
+  ADVERSÁRIO: "opponent",
   FC: "foulsCommitted",
   "FALTAS COMETIDAS": "foulsCommitted",
   FS: "foulsSuffered",
@@ -71,14 +74,19 @@ const HEADER_ALIASES: Record<string, keyof PlayerPerformance> = {
 
 function normHeader(h: string): keyof PlayerPerformance | "starter" | "homeAway" | null {
   const key = h.trim().toUpperCase().replace(/\./g, "");
-  if (key === "TIT" || key === "TITULAR") return "starter";
+  if (key === "TIT" || key === "TITULAR" || key === "PARTICIPAÇÃO" || key === "PARTICIPACAO")
+    return "starter";
   if (key === "C/F" || key === "CASA/FORA" || key === "LOCAL") return "homeAway";
   return HEADER_ALIASES[key] ?? null;
 }
 
 function splitCells(line: string): string[] {
   if (line.includes("\t")) return line.split("\t");
-  if (line.includes("|")) return line.split("|").map((c) => c.trim()).filter((_, i, a) => !(i === 0 && a[0] === "") );
+  if (line.includes("|"))
+    return line
+      .split("|")
+      .map((c) => c.trim())
+      .filter((_, i, a) => !(i === 0 && a[0] === ""));
   return line.split(/\s{2,}/);
 }
 
@@ -90,7 +98,10 @@ function parseJsonImport(text: string, raw: string): ParsedPlayerImport | null {
     return null;
   }
   const d = data as Record<string, unknown>;
-  const perfSrc = (d["performances"] ?? d["atuacoes"] ?? d["ÚLTIMAS 15 ATUAÇÕES"] ?? []) as unknown[];
+  const perfSrc = (d["performances"] ??
+    d["atuacoes"] ??
+    d["ÚLTIMAS 15 ATUAÇÕES"] ??
+    []) as unknown[];
   const performances: PlayerPerformance[] = (Array.isArray(perfSrc) ? perfSrc : []).map((p) => {
     const r = p as Record<string, unknown>;
     const get = (...keys: string[]) => {
@@ -98,8 +109,13 @@ function parseJsonImport(text: string, raw: string): ParsedPlayerImport | null {
       return undefined;
     };
     const toNum = (v: unknown) =>
-      v == null || v === "-" || v === "" ? null : typeof v === "number" ? v : parseNumberOrNull(String(v));
+      v == null || v === "-" || v === ""
+        ? null
+        : typeof v === "number"
+          ? v
+          : parseNumberOrNull(String(v));
     return {
+      team: (get("team", "time", "TIME") as string) ?? null,
       competition: (get("competition", "competicao", "COMP") as string) ?? null,
       opponent: (get("opponent", "adversario", "ADV") as string) ?? null,
       homeAway: (get("homeAway", "local") as "casa" | "fora") ?? null,
@@ -166,18 +182,22 @@ export function parseSofascoreExport(raw: string): ParsedPlayerImport {
   let team: string | null = null;
 
   let inPerformances = false;
-  let headers: (ReturnType<typeof normHeader>)[] = [];
+  let headers: ReturnType<typeof normHeader>[] = [];
   const performances: PlayerPerformance[] = [];
 
   for (const line of lines) {
     const t = line.trim();
     if (t === "") continue;
 
-    const kv = t.match(/^([A-ZÇÃÁÉÍÓÚÂÊÔÕ_ ]{3,30})\s*[:=]\s*(.*)$/);
+    // O coletor real usa tanto CHAVE: valor quanto CHAVE<TAB>valor.
+    const kv = t.match(/^([A-ZÇÃÁÉÍÓÚÂÊÔÕ_ ]{3,30})(?:\s*[:=]\s*|\t+)(.*)$/);
     if (kv && !inPerformances) {
       const key = (kv[1] ?? "").trim().toUpperCase();
       const value = cleanCell(kv[2] ?? "");
-      if (key === "JOGADOR") playerName = value;
+      if (key === "BLOCO" && value && /ÚLTIMAS\s+\d+\s+ATUA/i.test(value)) {
+        inPerformances = true;
+        headers = [];
+      } else if (key === "JOGADOR") playerName = value;
       else if (key === "SOFASCORE_ID") sofascoreId = value;
       else if (key === "URL") url = value;
       else if (key === "COLETADO_EM") collectedAt = value;
@@ -209,6 +229,7 @@ export function parseSofascoreExport(raw: string): ParsedPlayerImport {
       }
       if (cells.length < 2) continue;
       const p: PlayerPerformance = {
+        team: null,
         competition: null,
         opponent: null,
         homeAway: null,
@@ -231,7 +252,7 @@ export function parseSofascoreExport(raw: string): ParsedPlayerImport {
           p.starter = c == null ? null : /^(sim|s|titular|1|true)$/i.test(c);
         } else if (h === "homeAway") {
           p.homeAway = c == null ? null : /^(c|casa|h|home)$/i.test(c) ? "casa" : "fora";
-        } else if (h === "competition" || h === "opponent") {
+        } else if (h === "competition" || h === "opponent" || h === "team") {
           p[h] = c;
         } else {
           (p[h] as number | null) = num(cell);
@@ -242,17 +263,19 @@ export function parseSofascoreExport(raw: string): ParsedPlayerImport {
   }
 
   if (!playerName) errors.push("Bloco JOGADOR não encontrado.");
-  if (performances.length === 0) errors.push("Nenhuma atuação reconhecida (bloco ÚLTIMAS N ATUAÇÕES).");
+  if (performances.length === 0)
+    errors.push("Nenhuma atuação reconhecida (bloco ÚLTIMAS N ATUAÇÕES).");
 
   const missingMinutes = performances.filter((p) => p.minutes == null).length;
-  if (missingMinutes > 0) warnings.push(`${missingMinutes} atuação(ões) sem minutos — tratadas como indisponíveis.`);
+  if (missingMinutes > 0)
+    warnings.push(`${missingMinutes} atuação(ões) sem minutos — tratadas como indisponíveis.`);
 
   return {
     playerName,
     sofascoreId,
     url,
     collectedAt,
-    team,
+    team: team ?? performances.find((p) => p.team)?.team ?? null,
     competitions: [...new Set(performances.map((p) => p.competition).filter(Boolean) as string[])],
     performances,
     errors,

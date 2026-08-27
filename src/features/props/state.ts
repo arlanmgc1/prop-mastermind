@@ -41,6 +41,8 @@ export interface CalcState {
   opponentLadder: LadderRow[];
   gameLadder: LadderRow[];
   dispersionK: number | null;
+  /** Média histórica do time por 90 na estatística; denominador do share. */
+  teamBaselineRate90: number | null;
   distribution: DistributionKind;
 
   matchupMultiplier: number | null;
@@ -94,6 +96,7 @@ export function initialState(): CalcState {
     opponentLadder: [],
     gameLadder: [],
     dispersionK: null,
+    teamBaselineRate90: null,
     distribution: "negbin",
 
     matchupMultiplier: 1,

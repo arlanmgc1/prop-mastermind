@@ -1,7 +1,11 @@
 import { describe, expect, it } from "vitest";
 import { poissonCdf, poissonOver, poissonPmf, poissonSf } from "../distributions/poisson";
 import { negBinCdf, negBinOver, negBinPmf, negBinSf } from "../distributions/negativeBinomial";
-import { enforceMonotonic, fitTeamLadder, solveMuFromSingleLine } from "../distributions/fitTeamLadder";
+import {
+  enforceMonotonic,
+  fitTeamLadder,
+  solveMuFromSingleLine,
+} from "../distributions/fitTeamLadder";
 import type { LadderRow } from "../types";
 
 describe("Poisson", () => {
@@ -57,7 +61,7 @@ describe("monotonicidade", () => {
       { line: 9.5, pOver: 0.7, overround: null },
     ]);
     expect(fixed).toBe(true);
-    expect(points[0]!.pOver).toBeGreaterThan(points[1]!.pOver);
+    expect(points[0]!.pOver).toBeGreaterThanOrEqual(points[1]!.pOver);
   });
   it("mantém curva já monotônica", () => {
     const { fixed } = enforceMonotonic([
@@ -65,6 +69,16 @@ describe("monotonicidade", () => {
       { line: 9.5, pOver: 0.5, overround: null },
     ]);
     expect(fixed).toBe(false);
+  });
+  it("corrige cadeia de três inversões sem criar nova inversão", () => {
+    const { points, fixed } = enforceMonotonic([
+      { line: 8.5, pOver: 0.5, overround: null },
+      { line: 9.5, pOver: 0.8, overround: null },
+      { line: 10.5, pOver: 0.9, overround: null },
+    ]);
+    expect(fixed).toBe(true);
+    expect(points[0]!.pOver).toBeGreaterThanOrEqual(points[1]!.pOver);
+    expect(points[1]!.pOver).toBeGreaterThanOrEqual(points[2]!.pOver);
   });
 });
 
@@ -89,10 +103,7 @@ describe("ajuste da escada de equipe", () => {
   });
 
   it("linhas sem odds geram aviso e não zeram", () => {
-    const fit = fitTeamLadder(
-      [{ id: "1", line: 10.5, oddOver: null, oddUnder: 1.8 }],
-      "poisson",
-    );
+    const fit = fitTeamLadder([{ id: "1", line: 10.5, oddOver: null, oddUnder: 1.8 }], "poisson");
     expect(fit.mu).toBeNull();
     expect(fit.warnings.join(" ")).toMatch(/incompletas/);
   });

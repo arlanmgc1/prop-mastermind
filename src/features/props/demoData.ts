@@ -33,3 +33,5 @@ export const DEMO_COMPARISON_ODDS = [
   { source: "Casa Demo 2", odd: 1.9 },
   { source: "Casa Demo 3", odd: 1.87 },
 ];
+
+export const DEMO_TEAM_BASELINE_RATE90 = 11.2;

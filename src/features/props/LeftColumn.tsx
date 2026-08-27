@@ -15,7 +15,12 @@ import { parseNumberOrNull } from "@/domain/validation/validators";
 import type { CalcState, ReviewedOdd } from "./state";
 import { emptyLadderRow } from "./state";
 import { autoMinutes } from "./compute";
-import { DEMO_COMPARISON_ODDS, DEMO_SOFASCORE_EXPORT, DEMO_TEAM_LADDER } from "./demoData";
+import {
+  DEMO_COMPARISON_ODDS,
+  DEMO_SOFASCORE_EXPORT,
+  DEMO_TEAM_BASELINE_RATE90,
+  DEMO_TEAM_LADDER,
+} from "./demoData";
 import { odd as fmtOdd, param, pct } from "@/lib/format";
 
 type Patch = (p: Partial<CalcState>) => void;
@@ -41,7 +46,10 @@ function LadderTable({
   const applyPaste = () => {
     const parsed: LadderRow[] = [];
     for (const line of paste.split(/\r?\n/)) {
-      const cells = line.split(/[\t;,|]|\s{2,}/).map((c) => c.trim()).filter(Boolean);
+      const cells = line
+        .split(/[\t;,|]|\s{2,}/)
+        .map((c) => c.trim())
+        .filter(Boolean);
       if (cells.length < 2) continue;
       const l = parseNumberOrNull(cells[0]);
       if (l == null) continue;
@@ -89,13 +97,25 @@ function LadderTable({
               return (
                 <tr key={r.id} className="border-t border-border">
                   <td className="px-1.5 py-1">
-                    <NumInput value={r.line} onChange={(v) => update(r.id, { line: v ?? r.line })} ariaLabel="Linha" />
+                    <NumInput
+                      value={r.line}
+                      onChange={(v) => update(r.id, { line: v ?? r.line })}
+                      ariaLabel="Linha"
+                    />
                   </td>
                   <td className="px-1.5 py-1">
-                    <NumInput value={r.oddOver} onChange={(v) => update(r.id, { oddOver: v })} ariaLabel="Odd Over" />
+                    <NumInput
+                      value={r.oddOver}
+                      onChange={(v) => update(r.id, { oddOver: v })}
+                      ariaLabel="Odd Over"
+                    />
                   </td>
                   <td className="px-1.5 py-1">
-                    <NumInput value={r.oddUnder} onChange={(v) => update(r.id, { oddUnder: v })} ariaLabel="Odd Under" />
+                    <NumInput
+                      value={r.oddUnder}
+                      onChange={(v) => update(r.id, { oddUnder: v })}
+                      ariaLabel="Odd Under"
+                    />
                   </td>
                   <td className="num px-2 py-1 text-right text-muted-foreground">{pct(q)}</td>
                   <td className="px-1 py-1 text-right">
@@ -115,7 +135,11 @@ function LadderTable({
         </table>
       </div>
       <div className="flex flex-wrap gap-1.5">
-        <Chip onClick={() => onChange([...rows, emptyLadderRow(rows.length ? rows[rows.length - 1]!.line + 1 : 0.5)])}>
+        <Chip
+          onClick={() =>
+            onChange([...rows, emptyLadderRow(rows.length ? rows[rows.length - 1]!.line + 1 : 0.5)])
+          }
+        >
           Adicionar linha
         </Chip>
         {!single && (
@@ -206,7 +230,8 @@ export function LeftColumn({
         (f) =>
           new Promise<{ id: string; name: string; dataUrl: string }>((res) => {
             const r = new FileReader();
-            r.onload = () => res({ id: crypto.randomUUID(), name: f.name, dataUrl: String(r.result) });
+            r.onload = () =>
+              res({ id: crypto.randomUUID(), name: f.name, dataUrl: String(r.result) });
             r.readAsDataURL(f);
           }),
       ),
@@ -269,6 +294,7 @@ export function LeftColumn({
       teamLadder: DEMO_TEAM_LADDER.map((r) => ({ id: crypto.randomUUID(), ...r })),
       extraPlayerOdds: DEMO_COMPARISON_ODDS.map((o) => ({ id: crypto.randomUUID(), ...o })),
       dispersionK: 18,
+      teamBaselineRate90: DEMO_TEAM_BASELINE_RATE90,
     });
   };
 
@@ -291,7 +317,15 @@ export function LeftColumn({
             <Button size="sm" onClick={() => doImport(state.rawImport)}>
               Importar jogador
             </Button>
-            <Button size="sm" variant="secondary" onClick={() => toast.info("Importação em lote: disponível quando a extensão exportar múltiplos jogadores.")}>
+            <Button
+              size="sm"
+              variant="secondary"
+              onClick={() =>
+                toast.info(
+                  "Importação em lote: disponível quando a extensão exportar múltiplos jogadores.",
+                )
+              }
+            >
               Importar lote
             </Button>
             <Button
@@ -325,22 +359,40 @@ export function LeftColumn({
 
         <div className="mt-3 grid grid-cols-2 gap-2">
           <Field label="Jogador">
-            <Input value={state.playerName} onChange={(e) => patch({ playerName: e.target.value })} className="h-8 text-xs" />
+            <Input
+              value={state.playerName}
+              onChange={(e) => patch({ playerName: e.target.value })}
+              className="h-8 text-xs"
+            />
           </Field>
           <Field label="Time">
-            <Input value={state.team} onChange={(e) => patch({ team: e.target.value })} className="h-8 text-xs" />
+            <Input
+              value={state.team}
+              onChange={(e) => patch({ team: e.target.value })}
+              className="h-8 text-xs"
+            />
           </Field>
           <Field label="Adversário">
-            <Input value={state.opponent} onChange={(e) => patch({ opponent: e.target.value })} className="h-8 text-xs" />
+            <Input
+              value={state.opponent}
+              onChange={(e) => patch({ opponent: e.target.value })}
+              className="h-8 text-xs"
+            />
           </Field>
           <Field label="Competição">
-            <Input value={state.competition} onChange={(e) => patch({ competition: e.target.value })} className="h-8 text-xs" />
+            <Input
+              value={state.competition}
+              onChange={(e) => patch({ competition: e.target.value })}
+              className="h-8 text-xs"
+            />
           </Field>
         </div>
 
         <div className="mt-3 space-y-2">
           <div>
-            <p className="mb-1 text-[11px] uppercase tracking-wide text-muted-foreground">Posição / função</p>
+            <p className="mb-1 text-[11px] uppercase tracking-wide text-muted-foreground">
+              Posição / função
+            </p>
             <div className="flex flex-wrap gap-1.5">
               {ROLES.map((r) => (
                 <Chip key={r} active={state.role === r} onClick={() => patch({ role: r })}>
@@ -350,7 +402,9 @@ export function LeftColumn({
             </div>
           </div>
           <div>
-            <p className="mb-1 text-[11px] uppercase tracking-wide text-muted-foreground">Titularidade esperada</p>
+            <p className="mb-1 text-[11px] uppercase tracking-wide text-muted-foreground">
+              Titularidade esperada
+            </p>
             <div className="flex flex-wrap gap-1.5">
               {(["titular", "reserva", "incerto"] as const).map((s) => (
                 <Chip key={s} active={state.starter === s} onClick={() => patch({ starter: s })}>
@@ -360,18 +414,28 @@ export function LeftColumn({
             </div>
           </div>
           <div>
-            <p className="mb-1 text-[11px] uppercase tracking-wide text-muted-foreground">Minutagem esperada</p>
+            <p className="mb-1 text-[11px] uppercase tracking-wide text-muted-foreground">
+              Minutagem esperada
+            </p>
             <div className="flex flex-wrap items-center gap-1.5">
               <Chip
                 active={state.minutesMode === "auto"}
                 onClick={() => {
                   const a = autoMinutes(state);
-                  patch({ minutesMode: "auto", expectedMinutes: a.minutes, minutesLow: a.low, minutesHigh: a.high });
+                  patch({
+                    minutesMode: "auto",
+                    expectedMinutes: a.minutes,
+                    minutesLow: a.low,
+                    minutesHigh: a.high,
+                  });
                 }}
               >
                 Automática
               </Chip>
-              <Chip active={state.minutesMode === "manual"} onClick={() => patch({ minutesMode: "manual" })}>
+              <Chip
+                active={state.minutesMode === "manual"}
+                onClick={() => patch({ minutesMode: "manual" })}
+              >
                 Manual
               </Chip>
               <div className="w-20">
@@ -412,50 +476,83 @@ export function LeftColumn({
       <Panel title="Mercado do prop">
         <div className="flex flex-wrap gap-1.5">
           {MARKETS.map((m) => (
-            <Chip key={m} active={state.market === m} onClick={() => patch({ market: m, comparisonConfirmed: false })}>
+            <Chip
+              key={m}
+              active={state.market === m}
+              onClick={() => patch({ market: m, comparisonConfirmed: false })}
+            >
               {MARKET_LABELS[m]}
             </Chip>
           ))}
         </div>
         <div className="mt-3 grid grid-cols-2 gap-2">
           <Field label="Linha do jogador">
-            <NumInput value={state.playerLine} onChange={(v) => patch({ playerLine: v })} placeholder="1,5" />
+            <NumInput
+              value={state.playerLine}
+              onChange={(v) => patch({ playerLine: v })}
+              placeholder="1,5"
+            />
           </Field>
           <Field label="Odd Over disponível">
-            <NumInput value={state.offeredOdd} onChange={(v) => patch({ offeredOdd: v })} placeholder="1,85" />
+            <NumInput
+              value={state.offeredOdd}
+              onChange={(v) => patch({ offeredOdd: v })}
+              placeholder="1,85"
+            />
           </Field>
         </div>
         <div className="mt-3">
-          <p className="mb-1 text-[11px] uppercase tracking-wide text-muted-foreground">Regra de participação</p>
+          <p className="mb-1 text-[11px] uppercase tracking-wide text-muted-foreground">
+            Regra de participação
+          </p>
           <div className="flex flex-wrap gap-1.5">
-            <Chip active={state.participation === "substituto_conta"} onClick={() => patch({ participation: "substituto_conta" })}>
+            <Chip
+              active={state.participation === "substituto_conta"}
+              onClick={() => patch({ participation: "substituto_conta" })}
+            >
               Substituto conta
             </Chip>
-            <Chip active={state.participation === "somente_titular"} onClick={() => patch({ participation: "somente_titular" })}>
+            <Chip
+              active={state.participation === "somente_titular"}
+              onClick={() => patch({ participation: "somente_titular" })}
+            >
               Somente titular
             </Chip>
           </div>
         </div>
         <div className="mt-3 space-y-1.5">
           {state.extraPlayerOdds.map((o) => (
-            <div key={o.id} className="grid grid-cols-[minmax(0,1fr)_5rem_auto] items-center gap-1.5">
+            <div
+              key={o.id}
+              className="grid grid-cols-[minmax(0,1fr)_5rem_auto] items-center gap-1.5"
+            >
               <Input
                 value={o.source}
                 placeholder="Fonte"
                 onChange={(e) =>
-                  patch({ extraPlayerOdds: state.extraPlayerOdds.map((x) => (x.id === o.id ? { ...x, source: e.target.value } : x)) })
+                  patch({
+                    extraPlayerOdds: state.extraPlayerOdds.map((x) =>
+                      x.id === o.id ? { ...x, source: e.target.value } : x,
+                    ),
+                  })
                 }
                 className="h-8 text-xs"
               />
               <NumInput
                 value={o.odd}
                 onChange={(v) =>
-                  patch({ extraPlayerOdds: state.extraPlayerOdds.map((x) => (x.id === o.id ? { ...x, odd: v } : x)) })
+                  patch({
+                    extraPlayerOdds: state.extraPlayerOdds.map((x) =>
+                      x.id === o.id ? { ...x, odd: v } : x,
+                    ),
+                  })
                 }
               />
               <button
                 type="button"
-                onClick={() => patch({ extraPlayerOdds: state.extraPlayerOdds.filter((x) => x.id !== o.id) })}
+                onClick={() =>
+                  patch({ extraPlayerOdds: state.extraPlayerOdds.filter((x) => x.id !== o.id) })
+                }
                 className="px-1 text-muted-foreground hover:text-destructive"
                 aria-label="Remover odd"
               >
@@ -465,7 +562,12 @@ export function LeftColumn({
           ))}
           <Chip
             onClick={() =>
-              patch({ extraPlayerOdds: [...state.extraPlayerOdds, { id: crypto.randomUUID(), source: "", odd: null }] })
+              patch({
+                extraPlayerOdds: [
+                  ...state.extraPlayerOdds,
+                  { id: crypto.randomUUID(), source: "", odd: null },
+                ],
+              })
             }
           >
             Adicionar outra odd desta linha
@@ -485,26 +587,59 @@ export function LeftColumn({
         <div className="space-y-3">
           <div>
             <p className="mb-1 text-xs font-medium">Time do jogador</p>
-            <LadderTable rows={state.teamLadder} onChange={(rows) => patch({ teamLadder: rows })} label="o time" single={singleLineMarket} />
+            <LadderTable
+              rows={state.teamLadder}
+              onChange={(rows) => patch({ teamLadder: rows })}
+              label="o time"
+              single={singleLineMarket}
+            />
           </div>
           <div>
             <p className="mb-1 text-xs font-medium">Adversário (opcional)</p>
-            <LadderTable rows={state.opponentLadder} onChange={(rows) => patch({ opponentLadder: rows })} label="o adversário" single={singleLineMarket} />
+            <LadderTable
+              rows={state.opponentLadder}
+              onChange={(rows) => patch({ opponentLadder: rows })}
+              label="o adversário"
+              single={singleLineMarket}
+            />
           </div>
           <div>
             <p className="mb-1 text-xs font-medium">Total do jogo (opcional)</p>
-            <LadderTable rows={state.gameLadder} onChange={(rows) => patch({ gameLadder: rows })} label="o total do jogo" single={singleLineMarket} />
+            <LadderTable
+              rows={state.gameLadder}
+              onChange={(rows) => patch({ gameLadder: rows })}
+              label="o total do jogo"
+              single={singleLineMarket}
+            />
           </div>
-          <div className="grid grid-cols-2 gap-2">
-            <Field label="Dispersão k (opcional)" hint="Sem k, o cálculo cai para Poisson com aviso.">
+          <div className="grid grid-cols-3 gap-2">
+            <Field
+              label="Média histórica do time/90"
+              hint="Obrigatória para o share automático. Não use a linha do jogo atual."
+            >
+              <NumInput
+                value={state.teamBaselineRate90}
+                onChange={(v) => patch({ teamBaselineRate90: v })}
+              />
+            </Field>
+            <Field
+              label="Dispersão k (opcional)"
+              hint="Sem k, o cálculo cai para Poisson com aviso."
+            >
               <NumInput value={state.dispersionK} onChange={(v) => patch({ dispersionK: v })} />
             </Field>
             <Field label="Distribuição">
               <div className="flex gap-1.5">
-                <Chip active={state.distribution === "negbin"} onClick={() => patch({ distribution: "negbin" })}>
+                <Chip
+                  active={state.distribution === "negbin"}
+                  onClick={() => patch({ distribution: "negbin" })}
+                >
                   Bin. negativa
                 </Chip>
-                <Chip active={state.distribution === "poisson"} onClick={() => patch({ distribution: "poisson" })}>
+                <Chip
+                  active={state.distribution === "poisson"}
+                  onClick={() => patch({ distribution: "poisson" })}
+                >
                   Poisson
                 </Chip>
               </div>
@@ -512,20 +647,33 @@ export function LeftColumn({
           </div>
           <div className="grid grid-cols-3 gap-2">
             <Field label="Mult. confronto">
-              <NumInput value={state.matchupMultiplier} onChange={(v) => patch({ matchupMultiplier: v })} />
+              <NumInput
+                value={state.matchupMultiplier}
+                onChange={(v) => patch({ matchupMultiplier: v })}
+              />
             </Field>
             <Field label="Mult. função">
-              <NumInput value={state.roleMultiplier} onChange={(v) => patch({ roleMultiplier: v })} />
+              <NumInput
+                value={state.roleMultiplier}
+                onChange={(v) => patch({ roleMultiplier: v })}
+              />
             </Field>
             <Field label="Share manual" hint="Vazio = share por regra.">
-              <NumInput value={state.playerShareOverride} onChange={(v) => patch({ playerShareOverride: v })} />
+              <NumInput
+                value={state.playerShareOverride}
+                onChange={(v) => patch({ playerShareOverride: v })}
+              />
             </Field>
           </div>
         </div>
       </Panel>
 
       {/* Card D */}
-      <Panel title="Comparativo de Odds do Jogador" dashed badge={<Tag tone="muted">Extrator mock</Tag>}>
+      <Panel
+        title="Comparativo de Odds do Jogador"
+        dashed
+        badge={<Tag tone="muted">Extrator mock</Tag>}
+      >
         <div
           onDragOver={(e) => e.preventDefault()}
           onDrop={(e) => {
@@ -540,7 +688,11 @@ export function LeftColumn({
           className="rounded-xl border border-dashed border-primary/60 bg-background/40 p-4 text-center text-xs text-muted-foreground outline-none focus:border-primary"
         >
           Arraste prints aqui, cole da área de transferência (Ctrl+V) ou
-          <button type="button" className="mx-1 text-primary underline" onClick={() => fileRef.current?.click()}>
+          <button
+            type="button"
+            className="mx-1 text-primary underline"
+            onClick={() => fileRef.current?.click()}
+          >
             selecione arquivos
           </button>
           (PNG, JPG, WebP)
@@ -558,7 +710,11 @@ export function LeftColumn({
           <div className="mt-2 flex flex-wrap gap-2">
             {state.images.map((img) => (
               <div key={img.id} className="relative">
-                <img src={img.dataUrl} alt={img.name} className="h-16 w-24 rounded-lg border border-border object-cover" />
+                <img
+                  src={img.dataUrl}
+                  alt={img.name}
+                  className="h-16 w-24 rounded-lg border border-border object-cover"
+                />
                 <button
                   type="button"
                   aria-label="Remover print"
@@ -630,8 +786,12 @@ export function LeftColumn({
                   {state.extracted.map((o) => {
                     const mismatch =
                       (o.market != null && o.market !== state.market) ||
-                      (o.line != null && state.playerLine != null && Math.abs(o.line - state.playerLine) > 1e-9) ||
-                      (o.playerName != null && state.playerName !== "" && o.playerName.trim() !== state.playerName.trim());
+                      (o.line != null &&
+                        state.playerLine != null &&
+                        Math.abs(o.line - state.playerLine) > 1e-9) ||
+                      (o.playerName != null &&
+                        state.playerName !== "" &&
+                        o.playerName.trim() !== state.playerName.trim());
                     return (
                       <tr key={o.id} className="border-t border-border">
                         <td className="px-2 py-1 text-center">
@@ -643,15 +803,25 @@ export function LeftColumn({
                           />
                         </td>
                         <td className="px-1 py-1">
-                          <Input value={o.source ?? ""} onChange={(e) => updateExtracted(o.id, { source: e.target.value })} className="h-7 text-xs" />
+                          <Input
+                            value={o.source ?? ""}
+                            onChange={(e) => updateExtracted(o.id, { source: e.target.value })}
+                            className="h-7 text-xs"
+                          />
                         </td>
                         <td className="px-1 py-1">
-                          <Input value={o.playerName ?? ""} onChange={(e) => updateExtracted(o.id, { playerName: e.target.value })} className="h-7 text-xs" />
+                          <Input
+                            value={o.playerName ?? ""}
+                            onChange={(e) => updateExtracted(o.id, { playerName: e.target.value })}
+                            className="h-7 text-xs"
+                          />
                         </td>
                         <td className="px-1 py-1">
                           <select
                             value={o.market ?? ""}
-                            onChange={(e) => updateExtracted(o.id, { market: e.target.value as MarketType })}
+                            onChange={(e) =>
+                              updateExtracted(o.id, { market: e.target.value as MarketType })
+                            }
                             className="h-7 w-full rounded-md border border-input bg-secondary px-1 text-xs"
                           >
                             {MARKETS.map((m) => (
@@ -662,23 +832,33 @@ export function LeftColumn({
                           </select>
                         </td>
                         <td className="px-1 py-1 w-20">
-                          <NumInput value={o.line ?? null} onChange={(v) => updateExtracted(o.id, { line: v ?? undefined })} />
+                          <NumInput
+                            value={o.line ?? null}
+                            onChange={(v) => updateExtracted(o.id, { line: v ?? undefined })}
+                          />
                         </td>
                         <td className="px-1 py-1 w-20">
-                          <NumInput value={o.decimalOdd ?? null} onChange={(v) => updateExtracted(o.id, { decimalOdd: v ?? undefined })} />
+                          <NumInput
+                            value={o.decimalOdd ?? null}
+                            onChange={(v) => updateExtracted(o.id, { decimalOdd: v ?? undefined })}
+                          />
                         </td>
                         <td className="px-2 py-1 text-center">
                           <input
                             type="checkbox"
                             checked={o.isTargetOdd}
-                            onChange={(e) => updateExtracted(o.id, { isTargetOdd: e.target.checked })}
+                            onChange={(e) =>
+                              updateExtracted(o.id, { isTargetOdd: e.target.checked })
+                            }
                             aria-label="Marcar como odd-alvo"
                           />
                         </td>
                         <td className="num px-2 py-1 text-right text-muted-foreground">
                           {pct(o.confidence, 0)}
                           {mismatch ? <span className="ml-1 text-warning">⚠</span> : null}
-                          {duplicates.has(o.id) ? <span className="ml-1 text-destructive">dup</span> : null}
+                          {duplicates.has(o.id) ? (
+                            <span className="ml-1 text-destructive">dup</span>
+                          ) : null}
                         </td>
                       </tr>
                     );
@@ -699,7 +879,8 @@ export function LeftColumn({
           </div>
         ) : null}
         <p className="mt-2 text-[11px] text-muted-foreground">
-          Consenso unilateral é <strong>consenso bruto</strong>: contém margem desconhecida e não está “sem margem”.
+          Consenso unilateral é <strong>consenso bruto</strong>: contém margem desconhecida e não
+          está “sem margem”.
         </p>
       </Panel>
 
@@ -710,7 +891,9 @@ export function LeftColumn({
             <TooltipTrigger asChild>
               <span className="cursor-help text-muted-foreground">Peso do comparativo</span>
             </TooltipTrigger>
-            <TooltipContent className="text-xs">Peso provisório; deverá ser calibrado com histórico.</TooltipContent>
+            <TooltipContent className="text-xs">
+              Peso provisório; deverá ser calibrado com histórico.
+            </TooltipContent>
           </Tooltip>
           <span className="num text-primary">{pct(state.comparisonWeight, 1)}</span>
         </div>
@@ -723,8 +906,13 @@ export function LeftColumn({
           onValueChange={([v]) => patch({ comparisonWeight: (v ?? 0) / 100 })}
         />
         <div className="mt-3 flex items-center justify-between gap-2">
-          <span className="text-xs text-muted-foreground">Aplicar desconto heurístico de margem unilateral</span>
-          <Switch checked={state.useHeuristicDiscount} onCheckedChange={(v) => patch({ useHeuristicDiscount: v })} />
+          <span className="text-xs text-muted-foreground">
+            Aplicar desconto heurístico de margem unilateral
+          </span>
+          <Switch
+            checked={state.useHeuristicDiscount}
+            onCheckedChange={(v) => patch({ useHeuristicDiscount: v })}
+          />
         </div>
         {state.useHeuristicDiscount ? (
           <div className="mt-2 space-y-1">
@@ -735,7 +923,8 @@ export function LeftColumn({
               />
             </Field>
             <p className="text-[11px] text-warning">
-              Hipótese não calibrada: o desconto assume margem unilateral de {param(state.heuristicDiscount * 100, 1)}%.
+              Hipótese não calibrada: o desconto assume margem unilateral de{" "}
+              {param(state.heuristicDiscount * 100, 1)}%.
             </p>
           </div>
         ) : null}
@@ -751,7 +940,11 @@ export function LeftColumn({
             <p
               key={i}
               className={
-                v.severity === "erro" ? "text-xs text-destructive" : v.severity === "aviso" ? "text-xs text-warning" : "text-xs text-muted-foreground"
+                v.severity === "erro"
+                  ? "text-xs text-destructive"
+                  : v.severity === "aviso"
+                    ? "text-xs text-warning"
+                    : "text-xs text-muted-foreground"
               }
             >
               {v.message}
@@ -775,7 +968,9 @@ export function LeftColumn({
           {fmtOdd(
             state.extraPlayerOdds.filter((o) => o.odd != null).length
               ? 1 /
-                  (state.extraPlayerOdds.filter((o) => o.odd != null).reduce((a, b) => a + 1 / (b.odd as number), 0) /
+                  (state.extraPlayerOdds
+                    .filter((o) => o.odd != null)
+                    .reduce((a, b) => a + 1 / (b.odd as number), 0) /
                     state.extraPlayerOdds.filter((o) => o.odd != null).length)
               : null,
           )}
