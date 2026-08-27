@@ -38,5 +38,5 @@ export interface ExtractedPlayerOdd {
 export interface OddsImageExtractor {
   /** Nunca deve receber chaves de API no navegador. */
   extract(images: { id: string; name: string; dataUrl: string }[]): Promise<ExtractedPlayerOdd[]>;
-  readonly kind: "mock" | "edge-function";
+  readonly kind: "browser-ocr" | "edge-function";
 }

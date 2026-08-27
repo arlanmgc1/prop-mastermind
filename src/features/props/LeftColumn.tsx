@@ -12,6 +12,7 @@ import { MARKET_LABELS, type LadderRow, type MarketType, type PlayerRole } from 
 import { parseSofascoreExport } from "@/services/sofascoreImportParser";
 import { getOddsImageExtractor } from "@/services/oddsImageExtractor";
 import { parseNumberOrNull } from "@/domain/validation/validators";
+import { buildConsensus } from "@/domain/odds/consensus";
 import type { CalcState, ReviewedOdd } from "./state";
 import { emptyLadderRow } from "./state";
 import { autoMinutes } from "./compute";
@@ -252,7 +253,7 @@ export function LeftColumn({
       const reviewed: ReviewedOdd[] = out.map((o) => ({
         ...o,
         id: crypto.randomUUID(),
-        include: false,
+        include: o.decimalOdd != null && o.decimalOdd > 1,
         isTargetOdd: false,
         market: o.market ?? state.market,
         line: o.line ?? state.playerLine ?? undefined,
@@ -260,8 +261,8 @@ export function LeftColumn({
         source: o.source ?? state.images.find((i) => i.id === o.sourceImageId)?.name,
       }));
       patch({ extracted: [...state.extracted, ...reviewed], comparisonConfirmed: false });
-      toast.message("Extrator mock: preencha as odds manualmente na revisão.", {
-        description: "Nenhum OCR está conectado nesta versão.",
+      toast.success("Odds reconhecidas no print.", {
+        description: "Revise a linha e todas as casas antes de confirmar o comparativo.",
       });
     } catch (e) {
       setExtractError(e instanceof Error ? e.message : "Falha na leitura.");
@@ -283,6 +284,15 @@ export function LeftColumn({
     if (seen.has(key)) duplicates.add(o.id);
     seen.add(key);
   }
+
+  const comparisonPreview = buildConsensus(
+    state.extracted
+      .filter((o) => o.include && o.decimalOdd != null &&
+        (o.market == null || o.market === state.market) &&
+        (o.line == null || (state.playerLine != null && Math.abs(o.line - state.playerLine) < 1e-9)))
+      .map((o) => ({ id: o.id, source: o.source, decimalOdd: o.decimalOdd ?? null, isTargetOdd: o.isTargetOdd })),
+    { excludeTargetOdd: true },
+  );
 
   const loadDemo = () => {
     doImport(DEMO_SOFASCORE_EXPORT);
@@ -672,8 +682,11 @@ export function LeftColumn({
       <Panel
         title="Comparativo de Odds do Jogador"
         dashed
-        badge={<Tag tone="muted">Extrator mock</Tag>}
+        badge={<Tag tone="success">OCR local</Tag>}
       >
+        <p className="mb-2 text-[11px] text-muted-foreground">
+          Envie o recorte da primeira linha do jogador. O sistema lê a linha Over e todas as odds das casas exibidas no mesmo print.
+        </p>
         <div
           onDragOver={(e) => e.preventDefault()}
           onDrop={(e) => {
@@ -736,7 +749,7 @@ export function LeftColumn({
 
         <div className="mt-2 flex flex-wrap items-center gap-1.5">
           <Button size="sm" onClick={() => void readOdds()} disabled={reading}>
-            {reading ? "Lendo prints…" : "Ler odds dos prints"}
+            {reading ? "Lendo linha e odds…" : "Ler linha completa do print"}
           </Button>
           <Chip
             onClick={() =>
@@ -773,7 +786,7 @@ export function LeftColumn({
                 <thead className="bg-secondary text-[10px] uppercase tracking-wide text-muted-foreground">
                   <tr>
                     <th className="px-2 py-1.5">Incluir</th>
-                    <th className="px-2 py-1.5 text-left">Fonte</th>
+                    <th className="px-2 py-1.5 text-left">Fonte/casa</th>
                     <th className="px-2 py-1.5 text-left">Jogador</th>
                     <th className="px-2 py-1.5 text-left">Mercado</th>
                     <th className="px-2 py-1.5 text-left">Linha</th>
@@ -866,6 +879,16 @@ export function LeftColumn({
                 </tbody>
               </table>
             </div>
+            {comparisonPreview.count > 0 ? (
+              <div className="grid grid-cols-2 gap-2 rounded-lg border border-primary/30 bg-primary/5 p-3 sm:grid-cols-3">
+                <div><p className="text-[10px] text-muted-foreground">Casas válidas</p><p className="num text-base text-primary">{comparisonPreview.count}</p></div>
+                <div><p className="text-[10px] text-muted-foreground">Média das odds</p><p className="num text-base text-primary">{fmtOdd(comparisonPreview.mean)}</p></div>
+                <div><p className="text-[10px] text-muted-foreground">Consenso probabilístico</p><p className="num text-base">{fmtOdd(comparisonPreview.consensusOdd)}</p></div>
+                <div><p className="text-[10px] text-muted-foreground">Menor odd</p><p className="num text-sm">{fmtOdd(comparisonPreview.min)}</p></div>
+                <div><p className="text-[10px] text-muted-foreground">Maior odd</p><p className="num text-sm">{fmtOdd(comparisonPreview.max)}</p></div>
+                <div><p className="text-[10px] text-muted-foreground">Prob. média</p><p className="num text-sm">{pct(comparisonPreview.impliedMean)}</p></div>
+              </div>
+            ) : null}
             <div className="flex flex-wrap items-center gap-2">
               <Button size="sm" onClick={() => patch({ comparisonConfirmed: true })}>
                 Confirmar comparativo
