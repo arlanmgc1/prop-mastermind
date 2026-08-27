@@ -1,4 +1,4 @@
-import { logFactorial } from "./poisson";
+import { logFactorial, poissonOver } from "./poisson";
 
 function logGammaRatio(k: number, r: number): number {
   // log( Gamma(k + r) / (Gamma(r) * k!) )
@@ -42,7 +42,6 @@ export function distributionOver(
 ): number {
   if (kind === "poisson" || k == null || !(k > 0)) {
     // fallback explícito para Poisson
-    const { poissonOver } = require("./poisson") as typeof import("./poisson");
     return poissonOver(line, mu);
   }
   return negBinOver(line, mu, k);
