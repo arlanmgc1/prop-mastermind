@@ -14,7 +14,7 @@ describe("Poisson", () => {
     expect(poissonCdf(3, 2.5) + poissonSf(3, 2.5)).toBeCloseTo(1, 10);
   });
   it("Over n.5 = P(X >= n+1)", () => {
-    expect(poissonOver(1.5, 2)).toBeCloseTo(1 - (poissonPmf(0, 2) + poissonPmf(1, 2) + poissonPmf(2, 2)), 10);
+    expect(poissonOver(1.5, 2)).toBeCloseTo(1 - (poissonPmf(0, 2) + poissonPmf(1, 2)), 10);
   });
   it("PMF soma ~1", () => {
     let s = 0;
