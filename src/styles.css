@@ -65,7 +65,6 @@
   --color-success-foreground: var(--success-foreground);
   --color-warning: var(--warning);
   --color-warning-foreground: var(--warning-foreground);
-  --font-mono: var(--font-mono);
 }
 
 :root {
