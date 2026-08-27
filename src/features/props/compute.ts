@@ -64,7 +64,7 @@ function teamLambda(state: CalcState): { fit: LadderFitResult | null; lambda: nu
     return { fit, lambda: fit.mu, k: fit.k, msgs };
   }
   // linha única (faltas/desarmes) — resolve mu numericamente
-  const row = rows[0];
+  const row = rows[0]!;
   const fair = removeMargin(row.oddOver, row.oddUnder);
   const k = state.dispersionK;
   const kind: DistributionKind = k != null && state.distribution === "negbin" ? "negbin" : "poisson";
@@ -150,7 +150,7 @@ export function computeAll(state: CalcState): CalcResult {
           (o.line == null || (line != null && Math.abs(o.line - line) < 1e-9)),
       )
     : [];
-  const consensusInputs = [
+  const consensusInputs: { id: string; source?: string | undefined; decimalOdd: number | null; isTargetOdd?: boolean | undefined }[] = [
     ...confirmed.map((o) => ({ id: o.id, source: o.source, decimalOdd: o.decimalOdd ?? null, isTargetOdd: o.isTargetOdd })),
     ...state.extraPlayerOdds.map((o) => ({ id: o.id, source: o.source, decimalOdd: o.odd })),
   ];

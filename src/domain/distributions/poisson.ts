@@ -8,9 +8,9 @@ function logGamma(x: number): number {
   ];
   if (x < 0.5) return Math.log(Math.PI / Math.sin(Math.PI * x)) - logGamma(1 - x);
   x -= 1;
-  let a = c[0];
+  let a = c[0] as number;
   const t = x + g + 0.5;
-  for (let i = 1; i < g + 2; i++) a += c[i] / (x + i);
+  for (let i = 1; i < g + 2; i++) a += (c[i] as number) / (x + i);
   return 0.5 * Math.log(2 * Math.PI) + (x + 0.5) * Math.log(t) - t + Math.log(a);
 }
 

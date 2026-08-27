@@ -16,12 +16,7 @@ export const mockOddsImageExtractor: OddsImageExtractor = {
   async extract(images: SourceImage[]): Promise<ExtractedPlayerOdd[]> {
     await new Promise((r) => setTimeout(r, 350));
     return images.map((img) => ({
-      source: undefined,
-      playerName: undefined,
-      market: undefined,
-      line: undefined,
       side: "over" as const,
-      decimalOdd: undefined,
       confidence: 0,
       sourceImageId: img.id,
     }));

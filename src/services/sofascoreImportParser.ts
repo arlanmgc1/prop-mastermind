@@ -90,7 +90,7 @@ function parseJsonImport(text: string, raw: string): ParsedPlayerImport | null {
     return null;
   }
   const d = data as Record<string, unknown>;
-  const perfSrc = (d.performances ?? d.atuacoes ?? d["ÚLTIMAS 15 ATUAÇÕES"] ?? []) as unknown[];
+  const perfSrc = (d["performances"] ?? d["atuacoes"] ?? d["ÚLTIMAS 15 ATUAÇÕES"] ?? []) as unknown[];
   const performances: PlayerPerformance[] = (Array.isArray(perfSrc) ? perfSrc : []).map((p) => {
     const r = p as Record<string, unknown>;
     const get = (...keys: string[]) => {
@@ -116,11 +116,11 @@ function parseJsonImport(text: string, raw: string): ParsedPlayerImport | null {
   });
 
   return {
-    playerName: (d.playerName ?? d.JOGADOR ?? d.jogador ?? null) as string | null,
-    sofascoreId: (d.sofascoreId ?? d.SOFASCORE_ID ?? null) as string | null,
-    url: (d.url ?? d.URL ?? null) as string | null,
-    collectedAt: (d.collectedAt ?? d.COLETADO_EM ?? null) as string | null,
-    team: (d.team ?? d.TIME ?? null) as string | null,
+    playerName: (d["playerName"] ?? d["JOGADOR"] ?? d["jogador"] ?? null) as string | null,
+    sofascoreId: (d["sofascoreId"] ?? d["SOFASCORE_ID"] ?? null) as string | null,
+    url: (d["url"] ?? d["URL"] ?? null) as string | null,
+    collectedAt: (d["collectedAt"] ?? d["COLETADO_EM"] ?? null) as string | null,
+    team: (d["team"] ?? d["TIME"] ?? null) as string | null,
     competitions: [...new Set(performances.map((p) => p.competition).filter(Boolean) as string[])],
     performances,
     errors: performances.length === 0 ? ["Nenhuma atuação encontrada no JSON."] : [],
@@ -175,8 +175,8 @@ export function parseSofascoreExport(raw: string): ParsedPlayerImport {
 
     const kv = t.match(/^([A-ZÇÃÁÉÍÓÚÂÊÔÕ_ ]{3,30})\s*[:=]\s*(.*)$/);
     if (kv && !inPerformances) {
-      const key = kv[1].trim().toUpperCase();
-      const value = cleanCell(kv[2]);
+      const key = (kv[1] ?? "").trim().toUpperCase();
+      const value = cleanCell(kv[2] ?? "");
       if (key === "JOGADOR") playerName = value;
       else if (key === "SOFASCORE_ID") sofascoreId = value;
       else if (key === "URL") url = value;

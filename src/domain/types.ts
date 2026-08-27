@@ -36,12 +36,12 @@ export interface LadderRow {
 }
 
 export interface ExtractedPlayerOdd {
-  source?: string;
-  playerName?: string;
-  market?: MarketType;
-  line?: number;
+  source?: string | undefined;
+  playerName?: string | undefined;
+  market?: MarketType | undefined;
+  line?: number | undefined;
   side: "over";
-  decimalOdd?: number;
+  decimalOdd?: number | undefined;
   confidence: number;
   sourceImageId: string;
 }

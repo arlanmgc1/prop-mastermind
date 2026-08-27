@@ -53,11 +53,13 @@ export function enforceMonotonic(points: FairLadderPoint[]): {
   const out = points.map((p) => ({ ...p }));
   let fixed = false;
   for (let i = 1; i < out.length; i++) {
-    if (out[i].pOver > out[i - 1].pOver) {
+    const cur = out[i]!;
+    const prev = out[i - 1]!;
+    if (cur.pOver > prev.pOver) {
       fixed = true;
-      const avg = (out[i].pOver + out[i - 1].pOver) / 2;
-      out[i - 1].pOver = Math.min(0.999, avg + 1e-6);
-      out[i].pOver = Math.max(0.001, avg - 1e-6);
+      const avg = (cur.pOver + prev.pOver) / 2;
+      prev.pOver = Math.min(0.999, avg + 1e-6);
+      cur.pOver = Math.max(0.001, avg - 1e-6);
     }
   }
   return { points: out, fixed };

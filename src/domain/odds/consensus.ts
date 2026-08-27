@@ -1,14 +1,14 @@
 export interface ConsensusInput {
   id: string;
-  source?: string;
+  source?: string | undefined;
   decimalOdd: number | null;
-  weight?: number;
-  isTargetOdd?: boolean;
+  weight?: number | undefined;
+  isTargetOdd?: boolean | undefined;
 }
 
 export interface ConsensusResult {
-  used: { id: string; source?: string; decimalOdd: number; weight: number }[];
-  removed: { id: string; source?: string; decimalOdd: number | null; reason: string }[];
+  used: { id: string; source?: string | undefined; decimalOdd: number; weight: number }[];
+  removed: { id: string; source?: string | undefined; decimalOdd: number | null; reason: string }[];
   count: number;
   min: number | null;
   max: number | null;
@@ -35,7 +35,7 @@ export function median(values: number[]): number | null {
   if (values.length === 0) return null;
   const s = [...values].sort((a, b) => a - b);
   const mid = Math.floor(s.length / 2);
-  return s.length % 2 ? s[mid] : (s[mid - 1] + s[mid]) / 2;
+  return s.length % 2 ? (s[mid] as number) : ((s[mid - 1] as number) + (s[mid] as number)) / 2;
 }
 
 /**
@@ -44,7 +44,7 @@ export function median(values: number[]): number | null {
  */
 export function buildConsensus(
   inputs: ConsensusInput[],
-  opts: { excludeTargetOdd?: boolean; outlierZ?: number } = {},
+  opts: { excludeTargetOdd?: boolean | undefined; outlierZ?: number | undefined } = {},
 ): ConsensusResult {
   const removed: ConsensusResult["removed"] = [];
   let pool = inputs.filter((i) => {

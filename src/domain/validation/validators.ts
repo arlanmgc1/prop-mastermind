@@ -46,10 +46,12 @@ export function validateLadder(rows: LadderRow[], label: string): ValidationMess
 
   fair.sort((a, b) => a.line - b.line);
   for (let i = 1; i < fair.length; i++) {
-    if (fair[i].p > fair[i - 1].p) {
+    const cur = fair[i]!;
+    const prev = fair[i - 1]!;
+    if (cur.p > prev.p) {
       msgs.push({
         severity: "aviso",
-        message: `${label}: curva não monotônica entre ${fair[i - 1].line} e ${fair[i].line}.`,
+        message: `${label}: curva não monotônica entre ${prev.line} e ${cur.line}.`,
       });
     }
   }
