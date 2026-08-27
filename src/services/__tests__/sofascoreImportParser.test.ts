@@ -29,7 +29,7 @@ describe("parser do export SofaScore", () => {
 
   it("lê as atuações", () => {
     expect(parsed.performances.length).toBe(3);
-    const p0 = parsed.performances[0];
+    const p0 = parsed.performances[0]!;
     expect(p0.competition).toBe("LaLiga");
     expect(p0.opponent).toBe("Getafe");
     expect(p0.homeAway).toBe("casa");
@@ -41,14 +41,14 @@ describe("parser do export SofaScore", () => {
   });
 
   it("hífen vira null e nunca zero", () => {
-    expect(parsed.performances[1].shotsOnTarget).toBeNull();
-    expect(parsed.performances[2].xG).toBeNull();
-    expect(parsed.performances[2].shotsOnTarget).toBe(0);
+    expect(parsed.performances[1]!.shotsOnTarget).toBeNull();
+    expect(parsed.performances[2]!.xG).toBeNull();
+    expect(parsed.performances[2]!.shotsOnTarget).toBe(0);
   });
 
   it("campos futuros ficam null", () => {
-    expect(parsed.performances[0].foulsCommitted).toBeNull();
-    expect(parsed.performances[0].tackles).toBeNull();
+    expect(parsed.performances[0]!.foulsCommitted).toBeNull();
+    expect(parsed.performances[0]!.tackles).toBeNull();
   });
 
   it("competições reconhecidas", () => {
@@ -73,8 +73,8 @@ describe("parser do export SofaScore", () => {
       }),
     );
     expect(j.playerName).toBe("Teste");
-    expect(j.performances[0].shots).toBe(3);
-    expect(j.performances[0].shotsOnTarget).toBeNull();
+    expect(j.performances[0]!.shots).toBe(3);
+    expect(j.performances[0]!.shotsOnTarget).toBeNull();
   });
 
   it("agregação ignora atuações sem dado", () => {

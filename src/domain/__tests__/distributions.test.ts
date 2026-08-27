@@ -57,7 +57,7 @@ describe("monotonicidade", () => {
       { line: 9.5, pOver: 0.7, overround: null },
     ]);
     expect(fixed).toBe(true);
-    expect(points[0].pOver).toBeGreaterThan(points[1].pOver);
+    expect(points[0]!.pOver).toBeGreaterThan(points[1]!.pOver);
   });
   it("mantém curva já monotônica", () => {
     const { fixed } = enforceMonotonic([

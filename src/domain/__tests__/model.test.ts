@@ -102,10 +102,10 @@ describe("escada de props", () => {
     const rows = buildPropLadder({ mu: 2.4, k: 6, kind: "negbin" });
     expect(rows.length).toBeGreaterThan(2);
     for (let i = 1; i < rows.length; i++) {
-      expect(rows[i].pModel).toBeLessThanOrEqual(rows[i - 1].pModel);
+      expect(rows[i]!.pModel).toBeLessThanOrEqual(rows[i - 1]!.pModel);
     }
-    expect(rows[0].label).toBe("1+");
-    expect(rows[1].label).toBe("2+");
+    expect(rows[0]!.label).toBe("1+");
+    expect(rows[1]!.label).toBe("2+");
   });
   it("mu ausente devolve escada vazia", () => {
     expect(buildPropLadder({ mu: null, k: 6, kind: "negbin" })).toEqual([]);

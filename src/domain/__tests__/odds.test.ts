@@ -65,7 +65,7 @@ describe("consenso de odds", () => {
       { excludeTargetOdd: true },
     );
     expect(r.count).toBe(1);
-    expect(r.removed[0].reason).toMatch(/alvo/);
+    expect(r.removed[0]!.reason).toMatch(/alvo/);
   });
 
   it("remove outliers e informa motivo", () => {
