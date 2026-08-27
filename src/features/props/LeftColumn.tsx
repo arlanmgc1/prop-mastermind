@@ -260,7 +260,7 @@ export function LeftColumn({
         playerName: o.playerName ?? state.playerName,
         source: o.source ?? state.images.find((i) => i.id === o.sourceImageId)?.name,
       }));
-      patch({ extracted: [...state.extracted, ...reviewed], comparisonConfirmed: false });
+      patch({ extracted: [...state.extracted.filter((old) => !state.images.some((image) => image.id === old.sourceImageId)), ...reviewed], comparisonConfirmed: false });
       toast.success("Odds reconhecidas no print.", {
         description: "Revise a linha e todas as casas antes de confirmar o comparativo.",
       });
