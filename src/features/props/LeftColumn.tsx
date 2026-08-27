@@ -115,7 +115,7 @@ function LadderTable({
         </table>
       </div>
       <div className="flex flex-wrap gap-1.5">
-        <Chip onClick={() => onChange([...rows, emptyLadderRow(rows.length ? rows[rows.length - 1].line + 1 : 0.5)])}>
+        <Chip onClick={() => onChange([...rows, emptyLadderRow(rows.length ? rows[rows.length - 1]!.line + 1 : 0.5)])}>
           Adicionar linha
         </Chip>
         {!single && (
@@ -354,7 +354,7 @@ export function LeftColumn({
             <div className="flex flex-wrap gap-1.5">
               {(["titular", "reserva", "incerto"] as const).map((s) => (
                 <Chip key={s} active={state.starter === s} onClick={() => patch({ starter: s })}>
-                  {s[0].toUpperCase() + s.slice(1)}
+                  {s[0]!.toUpperCase() + s.slice(1)}
                 </Chip>
               ))}
             </div>
@@ -720,7 +720,7 @@ export function LeftColumn({
           min={0}
           max={30}
           step={1}
-          onValueChange={([v]) => patch({ comparisonWeight: v / 100 })}
+          onValueChange={([v]) => patch({ comparisonWeight: (v ?? 0) / 100 })}
         />
         <div className="mt-3 flex items-center justify-between gap-2">
           <span className="text-xs text-muted-foreground">Aplicar desconto heurístico de margem unilateral</span>
