@@ -12,10 +12,23 @@ export function parseComparisonRow(text: string): ParsedComparisonRow {
   if (!over || over.index == null) return { odds: [] };
   const line = numberValue(over[1] ?? "");
   const playerName = clean.slice(0, over.index).replace(/[^\p{L}\p{M}'’.-]+/gu, " ").trim();
-  const tail = clean.slice(over.index + over[0].length);
-  const odds = [...tail.matchAll(/\b\d{1,3}[.,]\d{1,3}\b/g)]
-    .map((match) => numberValue(match[0]))
-    .filter((odd) => Number.isFinite(odd) && odd > 1.01 && odd < 100);
+  // OCR de tabelas muito horizontais nem sempre preserva a ordem visual.
+  // Lemos todos os decimais da linha e removemos apenas a ocorrência da linha Over.
+  const values = [...clean.matchAll(/\b\d{1,3}[.,]\d{1,3}\b/g)].map((match) => ({
+    value: numberValue(match[0]),
+    index: match.index ?? -1,
+  }));
+  const lineTokenStart = over.index + over[0].search(/\d/);
+  let removedLine = false;
+  const odds = values
+    .filter((item) => {
+      if (!removedLine && item.index === lineTokenStart) {
+        removedLine = true;
+        return false;
+      }
+      return Number.isFinite(item.value) && item.value > 1.01 && item.value < 100;
+    })
+    .map((item) => item.value);
   return { playerName: playerName || undefined, line: Number.isFinite(line) ? line : undefined, odds };
 }
 

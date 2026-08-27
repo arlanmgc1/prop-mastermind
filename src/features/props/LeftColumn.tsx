@@ -726,7 +726,7 @@ export function LeftColumn({
                 <img
                   src={img.dataUrl}
                   alt={img.name}
-                  className="h-16 w-24 rounded-lg border border-border object-cover"
+                  className="h-16 w-40 rounded-lg border border-border bg-white object-contain"
                 />
                 <button
                   type="button"
