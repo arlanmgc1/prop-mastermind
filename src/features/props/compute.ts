@@ -21,6 +21,7 @@ import {
 } from "@/domain/player/projectPlayerMean";
 import { decide, expectedValue, fairOdd } from "@/domain/risk/expectedValue";
 import { fractionalKelly, fullKelly } from "@/domain/risk/kelly";
+import { allocateLadderStakes } from "@/domain/risk/playerLadder";
 import { validateLadder, type ValidationMessage } from "@/domain/validation/validators";
 import { aggregate } from "@/services/sofascoreImportParser";
 import type { CalcState } from "./state";
@@ -64,7 +65,7 @@ export interface CalcResult {
   coverage: number;
   sampleMinutes: number | null;
   sampleCount: number | null;
-  kelly: { full: number | null; fraction: number | null };
+  kelly: { full: number | null; fraction: number | null; suggestedUnits: number | null };
   computedAt: string;
 }
 
@@ -304,6 +305,16 @@ export function computeAll(state: CalcState): CalcResult {
     });
   }
 
+  const suggestedUnits =
+    pFinal != null && state.offeredOdd != null && line != null
+      ? (allocateLadderStakes(
+          [{ line, probability: pFinal, odd: state.offeredOdd }],
+          0.25,
+          2,
+          3.25,
+        )[0]?.units ?? 0)
+      : null;
+
   return {
     ok: pFinal != null && !messages.some((message) => message.severity === "erro"),
     messages,
@@ -334,6 +345,7 @@ export function computeAll(state: CalcState): CalcResult {
     kelly: {
       full: fullKelly(pFinal, state.offeredOdd),
       fraction: fractionalKelly(pFinal, state.offeredOdd, state.kellyDivisor),
+      suggestedUnits,
     },
     computedAt: new Date().toISOString(),
   };

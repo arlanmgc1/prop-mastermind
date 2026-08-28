@@ -6,6 +6,7 @@ import { odd as fmtOdd, param, pct, signed } from "@/lib/format";
 import type { CalcResult } from "./compute";
 import type { CalcState } from "./state";
 import type { KellyDivisor } from "@/domain/risk/kelly";
+import { PlayerLadderGenerator } from "./PlayerLadderGenerator";
 
 const DECISION_TONE = {
   valor: "success",
@@ -201,6 +202,8 @@ export function RightColumn({
         </div>
       </Panel>
 
+      <PlayerLadderGenerator state={state} result={result} />
+
       <Panel title="Detalhes do Cálculo">
         <div className="grid grid-cols-1 gap-x-6 sm:grid-cols-2">
           <Stat
@@ -306,13 +309,13 @@ export function RightColumn({
             value={result.kelly.full == null ? "—" : pct(result.kelly.full)}
           />
           <Stat
-            label="Stake sugerida"
+            label="Stake sugerida conservadora"
             value={
-              (result.ev ?? -1) > 0 && result.kelly.fraction != null
-                ? pct(result.kelly.fraction)
-                : "—"
+              result.kelly.suggestedUnits == null
+                ? "—"
+                : result.kelly.suggestedUnits.toFixed(2) + "u"
             }
-            tip="Calculada apenas com EV positivo e divisor Kelly selecionado."
+            tip="Kelly-rampa da referência, arredondado para baixo em 0,25u e limitado a 2u na linha principal."
           />
         </div>
         <div className="mt-2 space-y-1">
@@ -347,7 +350,7 @@ export function RightColumn({
           <div className="space-y-3">
             <div>
               <p className="mb-1 text-xs font-medium">
-                Probabilidades sem margem — linhas de equipe
+                Proportional margin — probabilidades sem margem da equipe
               </p>
               <div className="space-y-0.5">
                 {(result.teamFit?.points ?? []).map((p) => (
