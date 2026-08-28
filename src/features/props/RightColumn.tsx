@@ -303,7 +303,7 @@ export function RightColumn({
             </Chip>
           ))}
         </div>
-        <div className="mt-2 grid grid-cols-2 gap-x-6">
+        <div className="mt-2 grid grid-cols-2 gap-x-6 sm:grid-cols-3">
           <Stat
             label="Kelly completo"
             value={result.kelly.full == null ? "—" : pct(result.kelly.full)}
@@ -315,7 +315,21 @@ export function RightColumn({
                 ? "—"
                 : result.kelly.suggestedUnits.toFixed(2) + "u"
             }
-            tip="Kelly-rampa da referência, arredondado para baixo em 0,25u e limitado a 2u na linha principal."
+            tip="Gestão de 200u: 1/12 Kelly, edge mínimo de 3%, redutores de qualidade, floor de 0,25u e teto excepcional de 2u."
+          />
+          <Stat
+            label="Qualidade aplicada"
+            value={result.kelly.stakeQuality == null ? "—" : pct(result.kelly.stakeQuality)}
+            tip="Produto dos fatores de cobertura, amostra, minutos, incerteza e concordância."
+          />
+          <Stat
+            label="Edge usado na stake"
+            value={result.kelly.stakeEdge == null ? "—" : pct(result.kelly.stakeEdge)}
+            tip="Abaixo de 3% a stake é zero."
+          />
+          <Stat
+            label="Stake antes do floor/teto"
+            value={result.kelly.rawSuggestedUnits == null ? "—" : result.kelly.rawSuggestedUnits.toFixed(2) + "u"}
           />
         </div>
         <div className="mt-2 space-y-1">

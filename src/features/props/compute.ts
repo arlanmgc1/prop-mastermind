@@ -21,7 +21,7 @@ import {
 } from "@/domain/player/projectPlayerMean";
 import { decide, expectedValue, fairOdd } from "@/domain/risk/expectedValue";
 import { fractionalKelly, fullKelly } from "@/domain/risk/kelly";
-import { allocateLadderStakes } from "@/domain/risk/playerLadder";
+import { conservativeStakeUnits } from "@/domain/risk/playerLadder";
 import { validateLadder, type ValidationMessage } from "@/domain/validation/validators";
 import { aggregate } from "@/services/sofascoreImportParser";
 import type { CalcState } from "./state";
@@ -65,7 +65,14 @@ export interface CalcResult {
   coverage: number;
   sampleMinutes: number | null;
   sampleCount: number | null;
-  kelly: { full: number | null; fraction: number | null; suggestedUnits: number | null };
+  kelly: {
+    full: number | null;
+    fraction: number | null;
+    suggestedUnits: number | null;
+    rawSuggestedUnits: number | null;
+    stakeQuality: number | null;
+    stakeEdge: number | null;
+  };
   computedAt: string;
 }
 
@@ -305,15 +312,25 @@ export function computeAll(state: CalcState): CalcResult {
     });
   }
 
-  const suggestedUnits =
-    pFinal != null && state.offeredOdd != null && line != null
-      ? (allocateLadderStakes(
-          [{ line, probability: pFinal, odd: state.offeredOdd }],
-          0.25,
-          2,
-          3.25,
-        )[0]?.units ?? 0)
+  const sampleGames = perf.filter((performance) => performance[field] != null).length;
+  const stakeAudit =
+    pFinal != null && state.offeredOdd != null
+      ? conservativeStakeUnits({
+          probability: pFinal,
+          odd: state.offeredOdd,
+          coverage: agg.coverage,
+          sampleGames,
+          starter: state.starter,
+          minutesSpread:
+            state.minutesLow != null && state.minutesHigh != null
+              ? state.minutesHigh - state.minutesLow
+              : null,
+          uncertaintyWidth: uncertainty ? uncertainty[1] - uncertainty[0] : null,
+          modelComparableGap:
+            pModel != null && cmp.p != null ? Math.abs(pModel - cmp.p) : null,
+        })
       : null;
+  const suggestedUnits = stakeAudit?.units ?? null;
 
   return {
     ok: pFinal != null && !messages.some((message) => message.severity === "erro"),
@@ -346,6 +363,9 @@ export function computeAll(state: CalcState): CalcResult {
       full: fullKelly(pFinal, state.offeredOdd),
       fraction: fractionalKelly(pFinal, state.offeredOdd, state.kellyDivisor),
       suggestedUnits,
+      rawSuggestedUnits: stakeAudit?.rawUnits ?? null,
+      stakeQuality: stakeAudit?.quality ?? null,
+      stakeEdge: stakeAudit?.edge ?? null,
     },
     computedAt: new Date().toISOString(),
   };

@@ -134,3 +134,83 @@ export function distributeEscadaFromMain(
   });
   return result;
 }
+export interface ConservativeStakeInput {
+  probability: number;
+  odd: number;
+  coverage: number;
+  sampleGames: number;
+  starter: "titular" | "reserva" | "incerto";
+  minutesSpread: number | null;
+  uncertaintyWidth: number | null;
+  modelComparableGap: number | null;
+}
+
+export interface ConservativeStakeResult {
+  units: number;
+  rawUnits: number;
+  edge: number;
+  quality: number;
+  factors: {
+    coverage: number;
+    sample: number;
+    minutes: number;
+    uncertainty: number;
+    agreement: number;
+  };
+}
+
+const clamp = (value: number, low: number, high: number) =>
+  Math.max(low, Math.min(high, value));
+
+/**
+ * Gestão de 200u com 1/12 Kelly. Edge mínimo de 3%, redutores de qualidade,
+ * floor de 0,25u e teto excepcional de 2u.
+ */
+export function conservativeStakeUnits(input: ConservativeStakeInput): ConservativeStakeResult {
+  const edge = input.odd * input.probability - 1;
+  const coverageFactor = clamp(input.coverage / 0.8, 0.35, 1);
+  const sampleFactor = clamp(input.sampleGames / 15, 0.4, 1);
+  const minutesFactor =
+    input.starter === "incerto"
+      ? 0.6
+      : input.starter === "reserva"
+        ? 0.8
+        : input.minutesSpread == null
+          ? 0.85
+          : input.minutesSpread > 25
+            ? 0.7
+            : input.minutesSpread > 15
+              ? 0.85
+              : 1;
+  const uncertaintyFactor =
+    input.uncertaintyWidth == null
+      ? 0.75
+      : input.uncertaintyWidth > 0.2
+        ? 0.6
+        : input.uncertaintyWidth > 0.12
+          ? 0.8
+          : 1;
+  const agreementFactor =
+    input.modelComparableGap == null
+      ? 1
+      : input.modelComparableGap > 0.15
+        ? 0.7
+        : input.modelComparableGap > 0.08
+          ? 0.85
+          : 1;
+  const factors = {
+    coverage: coverageFactor,
+    sample: sampleFactor,
+    minutes: minutesFactor,
+    uncertainty: uncertaintyFactor,
+    agreement: agreementFactor,
+  };
+  const quality = Object.values(factors).reduce((product, value) => product * value, 1);
+  if (!(edge >= 0.03) || !(input.odd > 1)) {
+    return { units: 0, rawUnits: 0, edge, quality, factors };
+  }
+  const fullKelly = edge / (input.odd - 1);
+  const rawUnits = Math.max(0, (fullKelly * 200 * quality) / 12);
+  const units = floorStep(Math.min(2, rawUnits), 0.25);
+  return { units, rawUnits, edge, quality, factors };
+}
