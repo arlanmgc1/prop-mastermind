@@ -39,4 +39,18 @@ describe("stake conservadora", () => {
     });
     expect(weak.units).toBeLessThan(good.units);
   });
+  it("concede piso de 0,25u quando o edge mínimo foi aprovado", () => {
+    const result = conservativeStakeUnits({
+      probability: 1 / 1.73,
+      odd: 1.9,
+      coverage: 0.1,
+      sampleGames: 1,
+      starter: "incerto",
+      minutesSpread: 40,
+      uncertaintyWidth: 0.3,
+      modelComparableGap: 0.2,
+    });
+    expect(result.edge).toBeGreaterThan(0.03);
+    expect(result.units).toBe(0.25);
+  });
 });

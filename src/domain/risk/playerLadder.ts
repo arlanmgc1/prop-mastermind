@@ -8,8 +8,7 @@ const decimal = (raw: string) => Number(raw.replace(",", "."));
 export function parsePlayerLadderPaste(text: string): PlayerLadderMarketRow[] {
   const normalized = text.replace(/\*\*/g, " ").replace(/\s+/g, " ").trim();
   const rows: PlayerLadderMarketRow[] = [];
-  const expression =
-    /(?:mais\s+de|over)\s*([0-9]+(?:[.,][0-9]+)?)\s+([0-9]+(?:[.,][0-9]+)?)/giu;
+  const expression = /(?:mais\s+de|over)\s*([0-9]+(?:[.,][0-9]+)?)\s+([0-9]+(?:[.,][0-9]+)?)/giu;
   for (const match of normalized.matchAll(expression)) {
     const line = decimal(match[1] ?? "");
     const oddOver = decimal(match[2] ?? "");
@@ -34,7 +33,7 @@ export interface LadderStakeAllocation extends LadderStakeInput {
 
 const P_RAMP = 0.9505;
 const EDGE_KNEE = 0.06;
-const RAMP_C = (1 / 3) / Math.pow(EDGE_KNEE, P_RAMP);
+const RAMP_C = 1 / 3 / Math.pow(EDGE_KNEE, P_RAMP);
 
 export function referenceStakeUnits(probability: number, odd: number): number {
   if (!(probability > 0 && probability < 1) || !(odd > 1)) return 0;
@@ -73,11 +72,8 @@ export function allocateLadderStakes(
   const targetSum = targets.reduce((sum, value) => sum + value, 0);
   const scale = targetSum > remaining && targetSum > 0 ? remaining / targetSum : 1;
   for (let index = 1; index < raw.length; index++) {
-    const maxByPrevious = raw[index - 1]!.units;
-    const units = floorStep(
-      Math.min(maxByPrevious, targets[index - 1]! * scale, remaining),
-      step,
-    );
+    const maxByPrevious = Math.max(0, raw[index - 1]!.units - step);
+    const units = floorStep(Math.min(maxByPrevious, targets[index - 1]! * scale, remaining), step);
     raw[index]!.units = units;
     remaining = Math.max(0, remaining - units);
   }
@@ -124,7 +120,7 @@ export function distributeEscadaFromMain(
   for (const candidate of priority) {
     if (leftover + 1e-9 < step) break;
     const previous = candidate.index === 0 ? main : allocated[candidate.index - 1]!;
-    if (allocated[candidate.index]! + step <= previous + 1e-9) {
+    if (allocated[candidate.index]! + step <= previous - step + 1e-9) {
       allocated[candidate.index]! += step;
       leftover -= step;
     }
@@ -159,8 +155,7 @@ export interface ConservativeStakeResult {
   };
 }
 
-const clamp = (value: number, low: number, high: number) =>
-  Math.max(low, Math.min(high, value));
+const clamp = (value: number, low: number, high: number) => Math.max(low, Math.min(high, value));
 
 /**
  * Gestão de 200u com 1/12 Kelly. Edge mínimo de 3%, redutores de qualidade,
@@ -211,6 +206,6 @@ export function conservativeStakeUnits(input: ConservativeStakeInput): Conservat
   }
   const fullKelly = edge / (input.odd - 1);
   const rawUnits = Math.max(0, (fullKelly * 200 * quality) / 12);
-  const units = floorStep(Math.min(2, rawUnits), 0.25);
+  const units = Math.max(0.25, floorStep(Math.min(2, rawUnits), 0.25));
   return { units, rawUnits, edge, quality, factors };
 }

@@ -62,6 +62,7 @@ describe("EV e Kelly", () => {
   });
   it("decisão", () => {
     expect(decide(0.1)).toBe("valor");
+    expect(decide(0.001)).toBe("valor");
     expect(decide(0)).toBe("neutro");
     expect(decide(-0.2)).toBe("sem_valor");
     expect(decide(null)).toBe("sem_valor");

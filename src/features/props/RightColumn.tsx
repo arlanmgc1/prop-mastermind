@@ -185,7 +185,7 @@ export function RightColumn({
                       Over {param(r.line, 1)}{" "}
                       <span className="text-muted-foreground">({r.label})</span>
                     </td>
-                    <td className="num px-2 py-1.5 text-right">{pct(r.pFinal)}</td>
+                    <td className="num px-2 py-1.5 text-right">{pct(r.pFinal, 3)}</td>
                     <td className={`num px-2 py-1.5 text-right ${selected ? "text-primary" : ""}`}>
                       {fmtOdd(r.fair)}
                     </td>

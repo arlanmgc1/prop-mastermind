@@ -10,9 +10,9 @@ export function expectedValue(p: number | null, offeredOdd: number | null): numb
   return p * offeredOdd - 1;
 }
 
-export function decide(ev: number | null, threshold = 0.02): Decision {
+export function decide(ev: number | null): Decision {
   if (ev == null) return "sem_valor";
-  if (ev > threshold) return "valor";
-  if (ev >= -threshold) return "neutro";
+  if (ev > 1e-9) return "valor";
+  if (ev >= -1e-9) return "neutro";
   return "sem_valor";
 }

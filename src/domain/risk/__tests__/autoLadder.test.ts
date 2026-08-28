@@ -18,4 +18,16 @@ describe("escada automática para publicação", () => {
     expect(rows[2]!.units).toBeLessThanOrEqual(rows[1]!.units);
     expect(rows[3]!.units).toBeLessThanOrEqual(rows[2]!.units);
   });
+  it("mantém toda stake positiva estritamente abaixo do degrau anterior", () => {
+    const rows = distributeEscadaFromMain([1.5, 2.5, 3.5], 0.5, 0.25);
+    expect(rows).toEqual([
+      { line: 1.5, units: 0.5 },
+      { line: 2.5, units: 0.25 },
+      { line: 3.5, units: 0 },
+    ]);
+    const indicated = rows.filter((row) => row.units > 0);
+    for (let index = 1; index < indicated.length; index++) {
+      expect(indicated[index]!.units).toBeLessThan(indicated[index - 1]!.units);
+    }
+  });
 });
