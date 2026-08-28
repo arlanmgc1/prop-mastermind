@@ -87,3 +87,50 @@ export function allocateLadderStakes(
 export function ladderLabel(line: number): string {
   return String(Math.floor(line) + 1) + "+";
 }
+export interface DistributedEscadaRow {
+  line: number;
+  units: number;
+}
+
+/**
+ * Distribui a stake já indicada para a principal. Degraus seguintes partem
+ * de uma progressão 1/2, 1/4, 1/8 e são comprimidos por maior resto para
+ * respeitar o teto total sem perder a ordem decrescente.
+ */
+export function distributeEscadaFromMain(
+  lines: number[],
+  mainUnits: number,
+  step: 0.25 | 0.5,
+  totalCap = 3.25,
+): DistributedEscadaRow[] {
+  if (lines.length === 0) return [];
+  const ordered = [...new Set(lines)].sort((a, b) => a - b);
+  const main = floorStep(Math.min(2, totalCap, Math.max(0, mainUnits)), step);
+  const result = ordered.map((line) => ({ line, units: 0 }));
+  result[0]!.units = main;
+  if (ordered.length === 1 || main <= 0) return result;
+
+  const remaining = Math.max(0, totalCap - main);
+  const targets = ordered.slice(1).map((_, index) => main / Math.pow(2, index + 1));
+  const sumTargets = targets.reduce((sum, value) => sum + value, 0);
+  const scale = sumTargets > remaining && sumTargets > 0 ? remaining / sumTargets : 1;
+  const ideals = targets.map((target) => target * scale);
+  const allocated = ideals.map((ideal) => floorStep(ideal, step));
+  let leftover = Math.max(0, remaining - allocated.reduce((sum, value) => sum + value, 0));
+
+  const priority = ideals
+    .map((ideal, index) => ({ index, remainder: ideal - allocated[index]! }))
+    .sort((a, b) => b.remainder - a.remainder || a.index - b.index);
+  for (const candidate of priority) {
+    if (leftover + 1e-9 < step) break;
+    const previous = candidate.index === 0 ? main : allocated[candidate.index - 1]!;
+    if (allocated[candidate.index]! + step <= previous + 1e-9) {
+      allocated[candidate.index]! += step;
+      leftover -= step;
+    }
+  }
+  allocated.forEach((units, index) => {
+    result[index + 1]!.units = units;
+  });
+  return result;
+}
