@@ -54,7 +54,8 @@ function LadderTable({
       toast.error("Nenhuma linha reconhecida. Cole a frase da casa ou use: linha, odd Over, odd Under.");
       return;
     }
-    onChange(single ? parsed.slice(0, 1) : [...rows, ...parsed]);
+    const baseRows = rows.some((row) => row.oddOver != null || row.oddUnder != null) ? rows : [];
+    onChange(single ? parsed.slice(0, 1) : [...baseRows, ...parsed]);
     setPaste("");
   };
 
@@ -147,11 +148,11 @@ function LadderTable({
         )}
       </div>
       <div className="flex gap-1.5">
-        <Input
+        <Textarea
           value={paste}
           onChange={(e) => setPaste(e.target.value)}
-          placeholder="Ex.: AC Milan Total de Faltas Mais de 11.5 2.05 Menos de 11.5 1.72"
-          className="h-8 text-xs"
+          placeholder={"Cole uma linha ou o lote completo com os blocos Linhas, Mais de e Menos de"}
+          className="min-h-20 text-xs"
         />
         <Button size="sm" variant="secondary" onClick={applyPaste}>
           Adicionar linha colada

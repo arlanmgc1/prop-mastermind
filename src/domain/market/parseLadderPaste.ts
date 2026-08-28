@@ -43,6 +43,31 @@ export function parseLadderPaste(text: string): ParsedLadderLine[] {
   }
 
   const normalized = text.replace(/\*\*/g, " ").replace(/\s+/g, " ").trim();
+  const flatMore = /\b(?:mais\s+de|over)\b/i.exec(normalized);
+  const flatLess = /\b(?:menos\s+de|under)\b/i.exec(normalized);
+  const numericTokens = (segment: string) =>
+    [...segment.matchAll(/[0-9]+(?:[.,][0-9]+)?/g)]
+      .map((match) => decimal(match[0]))
+      .filter((value): value is number => value != null);
+  if (
+    flatMore?.index != null &&
+    flatLess?.index != null &&
+    flatLess.index > flatMore.index
+  ) {
+    const lines = numericTokens(normalized.slice(0, flatMore.index));
+    const overOdds = numericTokens(
+      normalized.slice(flatMore.index + flatMore[0].length, flatLess.index),
+    );
+    const underOdds = numericTokens(normalized.slice(flatLess.index + flatLess[0].length));
+    const count = Math.min(lines.length, overOdds.length, underOdds.length);
+    if (count > 1) {
+      return Array.from({ length: count }, (_, index) => ({
+        line: lines[index]!,
+        oddOver: overOdds[index]!,
+        oddUnder: underOdds[index]!,
+      }));
+    }
+  }
   const natural: ParsedLadderLine[] = [];
   const expression =
     /(?:mais\s+de|over)\s*([0-9]+(?:[.,][0-9]+)?)\s+([0-9]+(?:[.,][0-9]+)?)\s+(?:menos\s+de|under)\s*([0-9]+(?:[.,][0-9]+)?)\s+([0-9]+(?:[.,][0-9]+)?)/giu;
