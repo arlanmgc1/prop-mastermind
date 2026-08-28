@@ -54,7 +54,7 @@ function LadderTable({
       toast.error("Nenhuma linha reconhecida. Cole a frase da casa ou use: linha, odd Over, odd Under.");
       return;
     }
-    onChange([...rows, ...parsed]);
+    onChange(single ? parsed.slice(0, 1) : [...rows, ...parsed]);
     setPaste("");
   };
 
@@ -146,19 +146,17 @@ function LadderTable({
           </>
         )}
       </div>
-      {!single && (
-        <div className="flex gap-1.5">
-          <Input
-            value={paste}
-            onChange={(e) => setPaste(e.target.value)}
-            placeholder="Ex.: AC Milan Total de Faltas Mais de 11.5 2.05 Menos de 11.5 1.72"
-            className="h-8 text-xs"
-          />
-          <Button size="sm" variant="secondary" onClick={applyPaste}>
-            Colar tabela
-          </Button>
-        </div>
-      )}
+      <div className="flex gap-1.5">
+        <Input
+          value={paste}
+          onChange={(e) => setPaste(e.target.value)}
+          placeholder="Ex.: AC Milan Total de Faltas Mais de 11.5 2.05 Menos de 11.5 1.72"
+          className="h-8 text-xs"
+        />
+        <Button size="sm" variant="secondary" onClick={applyPaste}>
+          Adicionar linha colada
+        </Button>
+      </div>
     </div>
   );
 }

@@ -15,11 +15,12 @@ const decimal = (value: string | undefined): number | null => {
  * da casa ("Total de Faltas Mais de 11,5 2,05 Menos de 11,5 1,72").
  */
 export function parseLadderPaste(text: string): ParsedLadderLine[] {
+  const normalized = text.replace(/\*\*/g, " ").replace(/\s+/g, " ").trim();
   const natural: ParsedLadderLine[] = [];
   const expression =
     /(?:mais\s+de|over)\s*([0-9]+(?:[.,][0-9]+)?)\s+([0-9]+(?:[.,][0-9]+)?)\s+(?:menos\s+de|under)\s*([0-9]+(?:[.,][0-9]+)?)\s+([0-9]+(?:[.,][0-9]+)?)/giu;
 
-  for (const match of text.matchAll(expression)) {
+  for (const match of normalized.matchAll(expression)) {
     const overLine = decimal(match[1]);
     const oddOver = decimal(match[2]);
     const underLine = decimal(match[3]);
