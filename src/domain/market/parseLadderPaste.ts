@@ -15,6 +15,33 @@ const decimal = (value: string | undefined): number | null => {
  * da casa ("Total de Faltas Mais de 11,5 2,05 Menos de 11,5 1,72").
  */
 export function parseLadderPaste(text: string): ParsedLadderLine[] {
+  const cleanedLines = text
+    .replace(/\u00a0/g, " ")
+    .split(/\r?\n/)
+    .map((line) => line.replace(/\*\*/g, "").trim())
+    .filter(Boolean);
+  const moreIndex = cleanedLines.findIndex((line) => /^(mais\s+de|over)$/i.test(line));
+  const lessIndex = cleanedLines.findIndex((line) => /^(menos\s+de|under)$/i.test(line));
+  const numericLines = (lines: string[]) =>
+    lines
+      .filter((line) => /^[0-9]+(?:[.,][0-9]+)?$/.test(line))
+      .map((line) => decimal(line))
+      .filter((value): value is number => value != null);
+
+  if (moreIndex >= 0 && lessIndex > moreIndex) {
+    const lines = numericLines(cleanedLines.slice(0, moreIndex));
+    const overOdds = numericLines(cleanedLines.slice(moreIndex + 1, lessIndex));
+    const underOdds = numericLines(cleanedLines.slice(lessIndex + 1));
+    const count = Math.min(lines.length, overOdds.length, underOdds.length);
+    if (count > 0) {
+      return Array.from({ length: count }, (_, index) => ({
+        line: lines[index]!,
+        oddOver: overOdds[index]!,
+        oddUnder: underOdds[index]!,
+      }));
+    }
+  }
+
   const normalized = text.replace(/\*\*/g, " ").replace(/\s+/g, " ").trim();
   const natural: ParsedLadderLine[] = [];
   const expression =
