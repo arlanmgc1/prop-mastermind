@@ -229,7 +229,7 @@ export function RightColumn({
           <Stat
             label="Share do jogador"
             value={pct(result.playerShare)}
-            tip="Fatia da produção da equipe atribuída ao jogador."
+            tip="Indicador histórico para auditoria. Não é mais o multiplicador principal da projeção."
           />
           <Stat
             label="Minutos esperados"
@@ -237,10 +237,25 @@ export function RightColumn({
             tip="Minutos previstos em campo nesta partida."
           />
           <Stat
-            label="mu_player"
+            label="μ direto do jogador"
+            value={param(result.directMu)}
+            tip="Taxa própria do jogador × minutos esperados × ajustes de confronto e função."
+          />
+          <Stat
+            label="Índice de contexto do time"
+            value={result.teamContextRatio == null ? "—" : `${param(result.teamContextRatio, 3)}×`}
+            tip="lambda do mercado ÷ média histórica. Limitado entre 0,90 e 1,10 antes da ponderação."
+          />
+          <Stat
+            label="Ajuste efetivo do time"
+            value={`${signed(result.teamContextMultiplier - 1)} (${pct(result.teamContextWeight)} de peso)`}
+            tip="Impacto sobre μ limitado a aproximadamente ±3%."
+          />
+          <Stat
+            label="μ final do jogador"
             value={param(result.muPlayer)}
             accent
-            tip="Média esperada da estatística do jogador nesta partida."
+            tip="Média direta após o pequeno ajuste de contexto do time."
           />
           <Stat
             label="Dispersão k"
@@ -329,7 +344,11 @@ export function RightColumn({
           />
           <Stat
             label="Stake antes do floor/teto"
-            value={result.kelly.rawSuggestedUnits == null ? "—" : result.kelly.rawSuggestedUnits.toFixed(2) + "u"}
+            value={
+              result.kelly.rawSuggestedUnits == null
+                ? "—"
+                : result.kelly.rawSuggestedUnits.toFixed(2) + "u"
+            }
           />
         </div>
         <div className="mt-2 space-y-1">

@@ -15,7 +15,7 @@ import {
 import { buildPropLadder, type PropLadderRow } from "@/domain/player/buildPropLadder";
 import {
   computePlayerRate,
-  projectPlayerMean,
+  projectContextAdjustedMean,
   rate90,
   shareFromRates,
 } from "@/domain/player/projectPlayerMean";
@@ -49,6 +49,10 @@ export interface CalcResult {
   playerShare: number | null;
   expectedMinutes: number | null;
   muPlayer: number | null;
+  directMu: number | null;
+  teamContextRatio: number | null;
+  teamContextMultiplier: number;
+  teamContextWeight: number;
   dispersionK: number | null;
   distribution: DistributionKind;
   pModel: number | null;
@@ -198,8 +202,9 @@ export function computeAll(state: CalcState): CalcResult {
     });
   }
 
-  // O denominador deve ser a média HISTÓRICA do time. Usar o lambda atual
-  // faria lambda * (playerRate/lambda) cancelar o efeito do mercado.
+  // O share histórico continua visível para auditoria. A projeção automática
+  // agora é ancorada na taxa própria do jogador; share manual continua sendo
+  // uma substituição explícita quando o usuário optar por informá-lo.
   const teamRate90 = state.teamBaselineRate90;
   const share =
     state.playerShareOverride != null
@@ -208,16 +213,21 @@ export function computeAll(state: CalcState): CalcResult {
 
   if (state.playerShareOverride == null && teamRate90 == null) {
     messages.push({
-      severity: "erro",
+      severity: "aviso",
       message:
-        "Informe a média histórica do time/90 ou um share manual; o lambda atual não pode ser usado como denominador.",
+        "Média histórica do time/90 ausente: projeção direta do jogador usada sem ajuste de contexto.",
     });
   }
 
   const expectedMinutes = state.expectedMinutes;
-  const proj = projectPlayerMean({
-    lambdaTeam: lambda,
-    playerShare: share,
+  const projectionRate90 =
+    state.playerShareOverride != null && lambda != null
+      ? lambda * state.playerShareOverride
+      : (rates.shrunkRate90 ?? rates.rate90);
+  const proj = projectContextAdjustedMean({
+    playerRate90: projectionRate90,
+    lambdaTeam: state.playerShareOverride == null ? lambda : null,
+    teamBaselineRate90: state.playerShareOverride == null ? teamRate90 : null,
     expectedMinutes,
     matchupMultiplier: state.matchupMultiplier,
     roleMultiplier: state.roleMultiplier,
@@ -326,8 +336,7 @@ export function computeAll(state: CalcState): CalcResult {
               ? state.minutesHigh - state.minutesLow
               : null,
           uncertaintyWidth: uncertainty ? uncertainty[1] - uncertainty[0] : null,
-          modelComparableGap:
-            pModel != null && cmp.p != null ? Math.abs(pModel - cmp.p) : null,
+          modelComparableGap: pModel != null && cmp.p != null ? Math.abs(pModel - cmp.p) : null,
         })
       : null;
   const suggestedUnits = stakeAudit?.units ?? null;
@@ -343,6 +352,10 @@ export function computeAll(state: CalcState): CalcResult {
     playerShare: share,
     expectedMinutes,
     muPlayer: proj.muPlayer,
+    directMu: proj.directMu,
+    teamContextRatio: proj.teamContextRatio,
+    teamContextMultiplier: proj.teamContextMultiplier,
+    teamContextWeight: proj.teamContextWeight,
     dispersionK: kPlayer,
     distribution: kind,
     pModel,

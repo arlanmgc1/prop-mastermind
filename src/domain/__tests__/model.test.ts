@@ -10,6 +10,7 @@ import { expectedValue, fairOdd, decide } from "../risk/expectedValue";
 import { fractionalKelly, fullKelly } from "../risk/kelly";
 import {
   computePlayerRate,
+  projectContextAdjustedMean,
   projectPlayerMean,
   rate90,
   shareFromRates,
@@ -106,6 +107,34 @@ describe("projeção do jogador", () => {
     expect(r.muPlayer).toBeNull();
     expect(r.missing).toContain("lambda_team");
     expect(shareFromRates(2, null)).toBeNull();
+  });
+  it("ancora no jogador e limita o efeito do time a 3%", () => {
+    const low = projectContextAdjustedMean({
+      playerRate90: 3,
+      expectedMinutes: 90,
+      lambdaTeam: 8,
+      teamBaselineRate90: 12,
+    });
+    const high = projectContextAdjustedMean({
+      playerRate90: 3,
+      expectedMinutes: 90,
+      lambdaTeam: 16,
+      teamBaselineRate90: 12,
+    });
+    expect(low.directMu).toBeCloseTo(3, 10);
+    expect(low.muPlayer).toBeCloseTo(2.91, 10);
+    expect(high.muPlayer).toBeCloseTo(3.09, 10);
+  });
+  it("sem baseline usa a projeção direta", () => {
+    const r = projectContextAdjustedMean({
+      playerRate90: 2.4,
+      expectedMinutes: 75,
+      lambdaTeam: 15,
+      teamBaselineRate90: null,
+    });
+    expect(r.muPlayer).toBeCloseTo(2, 10);
+    expect(r.teamContextMultiplier).toBe(1);
+    expect(r.missing).toEqual([]);
   });
 });
 
