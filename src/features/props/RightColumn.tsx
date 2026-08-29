@@ -312,7 +312,7 @@ export function RightColumn({
 
       <Panel title="Risco">
         <div className="flex flex-wrap items-center gap-1.5">
-          {([12, 10, 8, 4] as KellyDivisor[]).map((d) => (
+          {([8, 10, 12, 4] as KellyDivisor[]).map((d) => (
             <Chip key={d} active={state.kellyDivisor === d} onClick={() => onKellyChange(d)}>
               {`1/${d}`}
             </Chip>

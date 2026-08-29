@@ -111,7 +111,7 @@ export function initialState(): CalcState {
     useHeuristicDiscount: false,
     heuristicDiscount: 0.04,
 
-    kellyDivisor: 12,
+    kellyDivisor: 8,
     isDemo: false,
   };
 }
@@ -137,7 +137,7 @@ export function loadDraft(): CalcState | null {
     return {
       ...initialState(),
       ...saved,
-      kellyDivisor: saved.kellyDivisor === 0 ? 12 : saved.kellyDivisor,
+      kellyDivisor: saved.kellyDivisor === 0 ? 8 : saved.kellyDivisor,
     };
   } catch {
     return null;
