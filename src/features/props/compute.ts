@@ -337,6 +337,7 @@ export function computeAll(state: CalcState): CalcResult {
               : null,
           uncertaintyWidth: uncertainty ? uncertainty[1] - uncertainty[0] : null,
           modelComparableGap: pModel != null && cmp.p != null ? Math.abs(pModel - cmp.p) : null,
+          kellyDivisor: state.kellyDivisor,
         })
       : null;
   const suggestedUnits = stakeAudit?.units ?? null;

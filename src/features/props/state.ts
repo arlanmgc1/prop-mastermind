@@ -111,7 +111,7 @@ export function initialState(): CalcState {
     useHeuristicDiscount: false,
     heuristicDiscount: 0.04,
 
-    kellyDivisor: 0,
+    kellyDivisor: 12,
     isDemo: false,
   };
 }
@@ -131,7 +131,14 @@ export function loadDraft(): CalcState | null {
   try {
     const raw = localStorage.getItem(KEY);
     if (!raw) return null;
-    return { ...initialState(), ...(JSON.parse(raw) as CalcState) };
+    const saved = JSON.parse(raw) as CalcState;
+    // Versões anteriores salvavam 0 como padrão embora a stake usasse 1/12.
+    // Migra esse estado legado para eliminar a contradição visual/matemática.
+    return {
+      ...initialState(),
+      ...saved,
+      kellyDivisor: saved.kellyDivisor === 0 ? 12 : saved.kellyDivisor,
+    };
   } catch {
     return null;
   }

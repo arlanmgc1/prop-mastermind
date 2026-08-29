@@ -1,4 +1,4 @@
-export type KellyDivisor = 0 | 4 | 8 | 10;
+export type KellyDivisor = 0 | 4 | 8 | 10 | 12;
 
 export function fullKelly(p: number | null, offeredOdd: number | null): number | null {
   if (p == null || offeredOdd == null || !(offeredOdd > 1)) return null;

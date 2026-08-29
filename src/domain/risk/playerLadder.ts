@@ -139,6 +139,7 @@ export interface ConservativeStakeInput {
   minutesSpread: number | null;
   uncertaintyWidth: number | null;
   modelComparableGap: number | null;
+  kellyDivisor?: 0 | 4 | 8 | 10 | 12;
 }
 
 export interface ConservativeStakeResult {
@@ -200,12 +201,30 @@ export function conservativeStakeUnits(input: ConservativeStakeInput): Conservat
     uncertainty: uncertaintyFactor,
     agreement: agreementFactor,
   };
-  const quality = Object.values(factors).reduce((product, value) => product * value, 1);
+  // Média geométrica ponderada: os fatores são correlacionados e não devem
+  // destruir a confiança por multiplicação bruta. Cobertura e amostra têm
+  // maior peso; os demais refinam a qualidade sem duplicar a penalização.
+  const qualityWeights = {
+    coverage: 0.3,
+    sample: 0.25,
+    minutes: 0.15,
+    uncertainty: 0.15,
+    agreement: 0.15,
+  };
+  const quality = Math.exp(
+    Object.entries(factors).reduce(
+      (sum, [key, value]) =>
+        sum + qualityWeights[key as keyof typeof qualityWeights] * Math.log(value),
+      0,
+    ),
+  );
   if (!(edge >= 0.03) || !(input.odd > 1)) {
     return { units: 0, rawUnits: 0, edge, quality, factors };
   }
+  const divisor = input.kellyDivisor ?? 12;
+  if (divisor === 0) return { units: 0, rawUnits: 0, edge, quality, factors };
   const fullKelly = edge / (input.odd - 1);
-  const rawUnits = Math.max(0, (fullKelly * 200 * quality) / 12);
+  const rawUnits = Math.max(0, (fullKelly * 200 * quality) / divisor);
   const units = Math.max(0.25, floorStep(Math.min(2, rawUnits), 0.25));
   return { units, rawUnits, edge, quality, factors };
 }

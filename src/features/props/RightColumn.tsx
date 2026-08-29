@@ -94,7 +94,7 @@ export function RightColumn({
             <p
               className={`num text-sm ${(result.ev ?? 0) > 0 ? "text-success" : "text-muted-foreground"}`}
             >
-              {signed(result.ev)}
+              {pct(result.ev, 1)}
             </p>
           </div>
         </div>
@@ -190,7 +190,7 @@ export function RightColumn({
                       {fmtOdd(r.fair)}
                     </td>
                     <td className="num px-2 py-1.5 text-right">{fmtOdd(r.marketOdd)}</td>
-                    <td className="num px-2 py-1.5 text-right">{signed(r.ev)}</td>
+                    <td className="num px-2 py-1.5 text-right">{pct(r.ev, 1)}</td>
                     <td className="px-2 py-1.5">
                       <Tag tone={DECISION_TONE[r.decision]}>{DECISION_LABEL[r.decision]}</Tag>
                     </td>
@@ -312,9 +312,9 @@ export function RightColumn({
 
       <Panel title="Risco">
         <div className="flex flex-wrap items-center gap-1.5">
-          {([0, 10, 8, 4] as KellyDivisor[]).map((d) => (
+          {([12, 10, 8, 4] as KellyDivisor[]).map((d) => (
             <Chip key={d} active={state.kellyDivisor === d} onClick={() => onKellyChange(d)}>
-              {d === 0 ? "Sem Kelly" : `1/${d}`}
+              {`1/${d}`}
             </Chip>
           ))}
         </div>
@@ -330,12 +330,12 @@ export function RightColumn({
                 ? "—"
                 : result.kelly.suggestedUnits.toFixed(2) + "u"
             }
-            tip="Gestão de 200u: 1/12 Kelly, edge mínimo de 3%, redutores de qualidade, floor de 0,25u e teto excepcional de 2u."
+            tip="Gestão de 200u: Kelly fracionado selecionado, edge mínimo de 3%, confiança ponderada, piso de 0,25u e teto excepcional de 2u."
           />
           <Stat
             label="Qualidade aplicada"
             value={result.kelly.stakeQuality == null ? "—" : pct(result.kelly.stakeQuality)}
-            tip="Produto dos fatores de cobertura, amostra, minutos, incerteza e concordância."
+            tip="Média geométrica ponderada de cobertura, amostra, minutos, incerteza e concordância; evita penalização duplicada de fatores correlacionados."
           />
           <Stat
             label="Edge usado na stake"

@@ -39,7 +39,7 @@ describe("stake conservadora", () => {
     });
     expect(weak.units).toBeLessThan(good.units);
   });
-  it("concede piso de 0,25u quando o edge mínimo foi aprovado", () => {
+  it("não destrói uma vantagem forte pela multiplicação dos redutores", () => {
     const result = conservativeStakeUnits({
       probability: 1 / 1.73,
       odd: 1.9,
@@ -51,6 +51,17 @@ describe("stake conservadora", () => {
       modelComparableGap: 0.2,
     });
     expect(result.edge).toBeGreaterThan(0.03);
-    expect(result.units).toBe(0.25);
+    expect(result.units).toBeGreaterThanOrEqual(0.5);
+  });
+
+  it("respeita a opção sem stake automática", () => {
+    const result = conservativeStakeUnits({
+      ...strong,
+      probability: 0.6,
+      odd: 2,
+      kellyDivisor: 0,
+    });
+    expect(result.edge).toBeGreaterThan(0);
+    expect(result.units).toBe(0);
   });
 });
